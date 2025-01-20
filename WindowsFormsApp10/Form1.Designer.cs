@@ -309,7 +309,7 @@
             // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(578, 328);
+            this.ClientSize = new System.Drawing.Size(577, 321);
             this.Controls.Add(this.btnRemoveAllStreamers);
             this.Controls.Add(this.lblCountdown);
             this.Controls.Add(this.btnCheckAllCategories);
