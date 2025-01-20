@@ -28,6 +28,7 @@ namespace TwitchCategoryTracker
         private ContextMenuStrip trayMenu;
         private bool notificationsEnabled = true;
         private int remainingTime; // Оставшееся время до следующей проверки
+        private bool FilterUnchangedCategories { get; set; } = false; // Значение по умолчанию
 
         public Form1()
         {
@@ -41,24 +42,22 @@ namespace TwitchCategoryTracker
             InitializeTrayIcon();
             _ = LoadSettings();
             UpdateButtonsState(false);
+
+            // Инициализация колонок в lstHistory
+            lstHistory.Columns.Add("Time", 60);
+            lstHistory.Columns.Add("Streamer", 100);
+            lstHistory.Columns.Add("Category", 120);
         }
 
         private void InitializeToolTips()
         {
             ToolTip toolTip = new ToolTip();
             toolTip.SetToolTip(txtStreamerName, "Введите имя стримера, например, 'shroud'.");
-            toolTip.SetToolTip(txtClientId, "Введите ваш Client ID от Twitch API.");
-            toolTip.SetToolTip(txtClientSecret, "Введите ваш Client Secret от Twitch API.");
-            toolTip.SetToolTip(txtInterval, "Введите интервал проверки в секундах (минимум 30).");
-            toolTip.SetToolTip(btnSaveCredentials, "Сохранить Client ID и Client Secret.");
-            toolTip.SetToolTip(btnEditCredentials, "Редактировать Client ID и Client Secret.");
             toolTip.SetToolTip(btnStartTracking, "Начать отслеживание категории стримеров.");
             toolTip.SetToolTip(btnStopTracking, "Остановить отслеживание.");
-            toolTip.SetToolTip(btnApplyInterval, "Применить новый интервал проверки.");
             toolTip.SetToolTip(btnAddStreamer, "Добавить стримера в список отслеживания.");
             toolTip.SetToolTip(btnRemoveStreamer, "Удалить выбранного стримера из списка.");
             toolTip.SetToolTip(btnClearHistory, "Очистить журнал.");
-            toolTip.SetToolTip(chkFilterUnchangedCategories, "Не добавлять записи, если категория не изменилась.");
             toolTip.SetToolTip(btnCheckAllCategories, "Проверить категории всех стримеров.");
             toolTip.SetToolTip(btnRemoveAllStreamers, "Удалить всех стримеров из списка.");
         }
@@ -206,7 +205,7 @@ namespace TwitchCategoryTracker
 
                     streamerCategories[streamerName] = newCategory;
                 }
-                else if (!chkFilterUnchangedCategories.Checked)
+                else if (!FilterUnchangedCategories) // Используем значение из настроек
                 {
                     // Категория не изменилась, но фильтр отключен
                     string time = DateTime.Now.ToString("HH:mm:ss");
@@ -234,7 +233,12 @@ namespace TwitchCategoryTracker
 
         private void AddToHistory(string time, string streamerName, string category)
         {
-            lstHistory.Items.Add(new ListViewItem(new[] { time, streamerName, category }));
+            // Проверяем, что ListViewItem создается и добавляется в lstHistory
+            var item = new ListViewItem(new[] { time, streamerName, category });
+            lstHistory.Items.Add(item);
+
+            // Прокручиваем журнал вниз, чтобы показать последнюю запись
+            lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
         }
 
         private void ShowToastNotification(string title, string message)
@@ -405,37 +409,24 @@ namespace TwitchCategoryTracker
             return categories;
         }
 
-        private void btnSaveCredentials_Click(object sender, EventArgs e)
+        private void btnSettings_Click(object sender, EventArgs e)
         {
-            ClientId = txtClientId.Text.Trim();
-            ClientSecret = txtClientSecret.Text.Trim();
+            // Открываем окно настроек
+            using (var settingsForm = new SettingsForm(ClientId, ClientSecret, checkInterval, FilterUnchangedCategories))
+            {
+                if (settingsForm.ShowDialog() == DialogResult.OK)
+                {
+                    // Сохраняем новые значения
+                    ClientId = settingsForm.ClientId;
+                    ClientSecret = settingsForm.ClientSecret;
+                    checkInterval = settingsForm.CheckInterval;
+                    FilterUnchangedCategories = settingsForm.FilterUnchangedCategories; // Обновляем значение
 
-            btnSaveCredentials.Enabled = false;
-            btnEditCredentials.Enabled = true;
-
-            txtClientId.Enabled = false;
-            txtClientSecret.Enabled = false;
-
-            SaveSettings();
-            MessageBox.Show("Credentials saved successfully.");
-
-            UpdateButtonsState(true);
-        }
-
-        private void btnEditCredentials_Click(object sender, EventArgs e)
-        {
-            txtClientId.Enabled = true;
-            txtClientSecret.Enabled = true;
-
-            btnSaveCredentials.Enabled = true;
-            btnEditCredentials.Enabled = false;
-
-            UpdateButtonsState(false);
-        }
-
-        private void btnHelp_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start("https://dev.twitch.tv/console");
+                    // Сохраняем настройки в файл
+                    SaveSettings();
+                    MessageBox.Show("Settings saved successfully.");
+                }
+            }
         }
 
         private async void btnStartTracking_Click(object sender, EventArgs e)
@@ -455,11 +446,6 @@ namespace TwitchCategoryTracker
             isTracking = true;
             btnStartTracking.Enabled = false;
             btnStopTracking.Enabled = true;
-            btnEditCredentials.Enabled = false; // Блокируем кнопку EDIT
-            btnHelp.Enabled = false; // Блокируем кнопку HELP
-
-            // Блокируем все кнопки, кроме Stop
-            UpdateButtonsState(true, true);
 
             remainingTime = checkInterval; // Устанавливаем начальное значение таймера
             UpdateCountdownLabel();
@@ -481,11 +467,6 @@ namespace TwitchCategoryTracker
                 isTracking = false;
                 btnStartTracking.Enabled = true;
                 btnStopTracking.Enabled = false;
-                btnEditCredentials.Enabled = true; // Разблокируем кнопку EDIT
-                btnHelp.Enabled = true; // Разблокируем кнопку HELP
-
-                // Разблокируем все кнопки
-                UpdateButtonsState(true, false);
 
                 trackingTimer.Stop();
                 countdownTimer.Stop();
@@ -495,27 +476,6 @@ namespace TwitchCategoryTracker
             else
             {
                 MessageBox.Show("Tracking is not active.");
-            }
-        }
-
-        private void btnApplyInterval_Click(object sender, EventArgs e)
-        {
-            if (int.TryParse(txtInterval.Text, out int newInterval))
-            {
-                if (newInterval >= 30 && newInterval <= 3600)
-                {
-                    checkInterval = newInterval;
-                    MessageBox.Show($"Interval set to {checkInterval} seconds.");
-                    SaveSettings();
-                }
-                else
-                {
-                    MessageBox.Show("Interval must be between 30 and 3600 seconds.");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Invalid interval.");
             }
         }
 
@@ -549,7 +509,7 @@ namespace TwitchCategoryTracker
                     writer.WriteLine(checkInterval);
                     writer.WriteLine(string.Join(",", trackedStreamers));
                     writer.WriteLine(notificationsEnabled);
-                    writer.WriteLine(chkFilterUnchangedCategories.Checked);
+                    writer.WriteLine(FilterUnchangedCategories); // Сохраняем значение
                 }
             }
             catch (Exception ex)
@@ -584,13 +544,9 @@ namespace TwitchCategoryTracker
                         }
                         if (bool.TryParse(reader.ReadLine(), out bool filterUnchangedCategories))
                         {
-                            chkFilterUnchangedCategories.Checked = filterUnchangedCategories;
+                            FilterUnchangedCategories = filterUnchangedCategories; // Загружаем значение
                         }
                     }
-
-                    txtClientId.Text = ClientId;
-                    txtClientSecret.Text = ClientSecret;
-                    txtInterval.Text = checkInterval.ToString();
 
                     UpdateTrayMenu();
 
@@ -598,13 +554,13 @@ namespace TwitchCategoryTracker
                 }
                 else
                 {
-                    UpdateButtonsState(false);
+                    UpdateButtonsState(false); // Обновляем состояние кнопок без проверки на сохранение настроек
                 }
             }
             catch (Exception ex)
             {
                 LogError($"Failed to load settings: {ex.Message}");
-                UpdateButtonsState(false);
+                UpdateButtonsState(false); // Обновляем состояние кнопок без проверки на сохранение настроек
             }
         }
 
@@ -699,18 +655,15 @@ namespace TwitchCategoryTracker
             }
         }
 
-        private void UpdateButtonsState(bool isCredentialsSaved, bool isTrackingActive = false)
+        private void UpdateButtonsState(bool isTrackingActive = false)
         {
-            btnHelp.Enabled = !isTrackingActive; // Кнопка Help блокируется при старте отслеживания
-
-            btnStartTracking.Enabled = isCredentialsSaved && !isTrackingActive;
-            btnStopTracking.Enabled = isCredentialsSaved && isTrackingActive;
-            btnApplyInterval.Enabled = isCredentialsSaved && !isTrackingActive;
-            btnAddStreamer.Enabled = isCredentialsSaved && !isTrackingActive;
-            btnRemoveStreamer.Enabled = isCredentialsSaved && !isTrackingActive;
-            btnCheckAllCategories.Enabled = isCredentialsSaved && !isTrackingActive;
-            btnClearHistory.Enabled = true; // Кнопка очистки журнала всегда доступна
-            btnRemoveAllStreamers.Enabled = isCredentialsSaved && !isTrackingActive;
+            btnStartTracking.Enabled = !isTrackingActive; // Кнопка "Start Tracking" активна, если отслеживание не запущено
+            btnStopTracking.Enabled = isTrackingActive;   // Кнопка "Stop Tracking" активна, если отслеживание запущено
+            btnAddStreamer.Enabled = !isTrackingActive;   // Кнопка "Add Streamer" активна, если отслеживание не запущено
+            btnRemoveStreamer.Enabled = !isTrackingActive; // Кнопка "Remove Streamer" активна, если отслеживание не запущено
+            btnCheckAllCategories.Enabled = !isTrackingActive; // Кнопка "Check All" активна, если отслеживание не запущено
+            btnClearHistory.Enabled = true; // Кнопка "Clear History" всегда активна
+            btnRemoveAllStreamers.Enabled = !isTrackingActive; // Кнопка "Remove All Streamers" активна, если отслеживание не запущено
         }
 
         private void UpdateStreamersList()
@@ -731,6 +684,15 @@ namespace TwitchCategoryTracker
         }
 
         private void txtStreamerName_TextChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void lblTrackedStreamers_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lstHistory_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
