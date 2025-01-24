@@ -153,7 +153,7 @@
             this.btnClearHistory.Name = "btnClearHistory";
             this.btnClearHistory.Size = new System.Drawing.Size(103, 23);
             this.btnClearHistory.TabIndex = 20;
-            this.btnClearHistory.Text = "Очистить журнал";
+            this.btnClearHistory.Text = "Clear History";
             this.btnClearHistory.UseVisualStyleBackColor = true;
             this.btnClearHistory.Click += new System.EventHandler(this.btnClearHistory_Click);
             // 
@@ -174,7 +174,7 @@
             this.lblCountdown.Name = "lblCountdown";
             this.lblCountdown.Size = new System.Drawing.Size(152, 13);
             this.lblCountdown.TabIndex = 24;
-            this.lblCountdown.Text = "Следующая проверка через:";
+            this.lblCountdown.Text = "Next check in:";
             // 
             // btnRemoveAllStreamers
             // 
@@ -182,7 +182,7 @@
             this.btnRemoveAllStreamers.Name = "btnRemoveAllStreamers";
             this.btnRemoveAllStreamers.Size = new System.Drawing.Size(103, 23);
             this.btnRemoveAllStreamers.TabIndex = 25;
-            this.btnRemoveAllStreamers.Text = "Удалить всех стримеров";
+            this.btnRemoveAllStreamers.Text = "Remove All Streamers";
             this.btnRemoveAllStreamers.UseVisualStyleBackColor = true;
             this.btnRemoveAllStreamers.Click += new System.EventHandler(this.btnRemoveAllStreamers_Click);
             // 
@@ -219,7 +219,6 @@
             this.Text = "Twitch Category Tracker";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
     }
 }

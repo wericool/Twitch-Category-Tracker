@@ -26,9 +26,11 @@ namespace TwitchCategoryTracker
         private Dictionary<string, string> streamerCategories = new Dictionary<string, string>();
         private NotifyIcon trayIcon;
         private ContextMenuStrip trayMenu;
-        private bool notificationsEnabled = true;
-        private int remainingTime; // Оставшееся время до следующей проверки
-        private bool FilterUnchangedCategories { get; set; } = false; // Значение по умолчанию
+        private int notificationMode = 2; // 0 - Off, 1 - Without sound, 2 - With sound, 3 - Sound only
+        private int remainingTime;
+        private bool FilterUnchangedCategories { get; set; } = false;
+        private bool SaveLogToFile { get; set; } = false;
+        private string currentLanguage = "EN";
 
         public Form1()
         {
@@ -36,30 +38,31 @@ namespace TwitchCategoryTracker
             trackingTimer = new System.Windows.Forms.Timer();
             trackingTimer.Tick += TrackingTimer_Tick;
             countdownTimer = new System.Windows.Forms.Timer();
-            countdownTimer.Interval = 1000; // 1 секунда
+            countdownTimer.Interval = 1000;
             countdownTimer.Tick += CountdownTimer_Tick;
             InitializeToolTips();
             InitializeTrayIcon();
             _ = LoadSettings();
             UpdateButtonsState(false);
 
-            // Инициализация колонок в lstHistory
             lstHistory.Columns.Add("Time", 60);
             lstHistory.Columns.Add("Streamer", 100);
             lstHistory.Columns.Add("Category", 120);
+
+            UpdateLanguage();
         }
 
         private void InitializeToolTips()
         {
             ToolTip toolTip = new ToolTip();
-            toolTip.SetToolTip(txtStreamerName, "Введите имя стримера, например, 'shroud'.");
-            toolTip.SetToolTip(btnStartTracking, "Начать отслеживание категории стримеров.");
-            toolTip.SetToolTip(btnStopTracking, "Остановить отслеживание.");
-            toolTip.SetToolTip(btnAddStreamer, "Добавить стримера в список отслеживания.");
-            toolTip.SetToolTip(btnRemoveStreamer, "Удалить выбранного стримера из списка.");
-            toolTip.SetToolTip(btnClearHistory, "Очистить журнал.");
-            toolTip.SetToolTip(btnCheckAllCategories, "Проверить категории всех стримеров.");
-            toolTip.SetToolTip(btnRemoveAllStreamers, "Удалить всех стримеров из списка.");
+            toolTip.SetToolTip(txtStreamerName, "Enter the streamer's name, e.g., 'shroud'.");
+            toolTip.SetToolTip(btnStartTracking, "Start tracking streamers' categories.");
+            toolTip.SetToolTip(btnStopTracking, "Stop tracking.");
+            toolTip.SetToolTip(btnAddStreamer, "Add a streamer to the tracking list.");
+            toolTip.SetToolTip(btnRemoveStreamer, "Remove the selected streamer from the list.");
+            toolTip.SetToolTip(btnClearHistory, "Clear the history.");
+            toolTip.SetToolTip(btnCheckAllCategories, "Check all streamers' categories.");
+            toolTip.SetToolTip(btnRemoveAllStreamers, "Remove all streamers from the list.");
         }
 
         private void InitializeTrayIcon()
@@ -70,43 +73,94 @@ namespace TwitchCategoryTracker
             trayIcon.Visible = false;
 
             trayMenu = new ContextMenuStrip();
-            trayMenu.Items.Add("Развернуть", null, OnRestore);
-            trayMenu.Items.Add("Тестовое уведомление", null, OnTestNotification);
-
+            trayMenu.Items.Add("Test Notification", null, OnTestNotification);
             trayMenu.Items.Add(new ToolStripSeparator());
-
-            ToolStripMenuItem notificationsMenuItem = new ToolStripMenuItem("Уведомления");
-            ToolStripMenuItem enableNotificationsItem = new ToolStripMenuItem("Включить");
-            ToolStripMenuItem disableNotificationsItem = new ToolStripMenuItem("Отключить");
-
-            enableNotificationsItem.Click += (s, e) => { notificationsEnabled = true; UpdateTrayMenu(); SaveSettings(); };
-            disableNotificationsItem.Click += (s, e) => { notificationsEnabled = false; UpdateTrayMenu(); SaveSettings(); };
-
-            notificationsMenuItem.DropDownItems.Add(enableNotificationsItem);
-            notificationsMenuItem.DropDownItems.Add(disableNotificationsItem);
-
-            trayMenu.Items.Add(notificationsMenuItem);
-            UpdateTrayMenu();
-
+            trayMenu.Items.Add("Notifications: Off", null, OnToggleNotifications);
+            trayMenu.Items.Add("Notifications: On (No Sound)", null, OnToggleNotifications);
+            trayMenu.Items.Add("Notifications: On (With Sound)", null, OnToggleNotifications);
+            trayMenu.Items.Add("Notifications: Sound Only", null, OnToggleNotifications);
             trayMenu.Items.Add(new ToolStripSeparator());
-            trayMenu.Items.Add("Выход", null, OnExit);
+            trayMenu.Items.Add("Settings", null, OnSettingsFromTray);
+            trayMenu.Items.Add(new ToolStripSeparator());
+            trayMenu.Items.Add("Exit", null, OnExit);
 
             trayIcon.ContextMenuStrip = trayMenu;
             trayIcon.DoubleClick += OnRestore;
         }
 
+        private void OnToggleNotifications(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            if (item != null)
+            {
+                if (item.Text == "Notifications: Off")
+                {
+                    notificationMode = 0;
+                }
+                else if (item.Text == "Notifications: On (No Sound)")
+                {
+                    notificationMode = 1;
+                }
+                else if (item.Text == "Notifications: On (With Sound)")
+                {
+                    notificationMode = 2;
+                }
+                else if (item.Text == "Notifications: Sound Only")
+                {
+                    notificationMode = 3;
+                }
+                UpdateTrayMenu();
+            }
+        }
+
+        private void OnTestNotification(object sender, EventArgs e)
+        {
+            if (notificationMode > 0)
+            {
+                Task.Delay(5000).ContinueWith(_ =>
+                {
+                    this.Invoke((MethodInvoker)(() =>
+                    {
+                        ShowToastNotification("Test Notification", "This is a test notification to check functionality.");
+                    }));
+                });
+            }
+            else
+            {
+                MessageBox.Show("Notifications are disabled.");
+            }
+        }
+
+        private void OnSettingsFromTray(object sender, EventArgs e)
+        {
+            btnSettings_Click(sender, e);
+        }
+
         private void UpdateTrayMenu()
         {
-            foreach (ToolStripMenuItem item in ((ToolStripMenuItem)trayMenu.Items[3]).DropDownItems)
+            foreach (ToolStripItem item in trayMenu.Items)
             {
-                if (item.Text == "Включить")
+                if (item is ToolStripMenuItem menuItem && menuItem.Text.StartsWith("Notifications:"))
                 {
-                    item.Checked = notificationsEnabled;
+                    menuItem.Checked = false; // Сначала снимаем все галочки
                 }
-                else if (item.Text == "Отключить")
-                {
-                    item.Checked = !notificationsEnabled;
-                }
+            }
+
+            // Устанавливаем галочку для выбранного режима уведомлений
+            switch (notificationMode)
+            {
+                case 0:
+                    ((ToolStripMenuItem)trayMenu.Items[2]).Checked = true;
+                    break;
+                case 1:
+                    ((ToolStripMenuItem)trayMenu.Items[3]).Checked = true;
+                    break;
+                case 2:
+                    ((ToolStripMenuItem)trayMenu.Items[4]).Checked = true;
+                    break;
+                case 3:
+                    ((ToolStripMenuItem)trayMenu.Items[5]).Checked = true;
+                    break;
             }
         }
 
@@ -115,24 +169,6 @@ namespace TwitchCategoryTracker
             this.Show();
             this.WindowState = FormWindowState.Normal;
             trayIcon.Visible = false;
-        }
-
-        private void OnTestNotification(object sender, EventArgs e)
-        {
-            if (notificationsEnabled)
-            {
-                Task.Delay(5000).ContinueWith(_ =>
-                {
-                    this.Invoke((MethodInvoker)(() =>
-                    {
-                        ShowToastNotification("Тестовое уведомление", "Это тестовое уведомление для проверки функциональности.");
-                    }));
-                });
-            }
-            else
-            {
-                MessageBox.Show("Уведомления отключены.");
-            }
         }
 
         private void OnExit(object sender, EventArgs e)
@@ -154,7 +190,7 @@ namespace TwitchCategoryTracker
         private async void TrackingTimer_Tick(object sender, EventArgs e)
         {
             await CheckAllStreamersCategoriesAsync();
-            remainingTime = checkInterval; // Сбрасываем таймер
+            remainingTime = checkInterval;
             UpdateCountdownLabel();
         }
 
@@ -169,7 +205,9 @@ namespace TwitchCategoryTracker
 
         private void UpdateCountdownLabel()
         {
-            lblCountdown.Text = $"Следующая проверка через: {remainingTime} сек.";
+            lblCountdown.Text = currentLanguage == "EN"
+                ? $"Next check in: {remainingTime} sec."
+                : $"Следующая проверка через: {remainingTime} сек.";
         }
 
         private async Task CheckAllStreamersCategoriesAsync()
@@ -193,36 +231,35 @@ namespace TwitchCategoryTracker
                 string oldCategory = streamerCategories[streamerName];
                 if (oldCategory != newCategory)
                 {
-                    // Категория изменилась
-                    if (notificationsEnabled)
+                    if (notificationMode > 0)
                     {
-                        ShowToastNotification("Категория изменена", $"{streamerName} сменил категорию с '{oldCategory}' на '{newCategory}'.");
+                        ShowToastNotification(
+                            currentLanguage == "EN" ? "Category Changed" : "Категория изменена",
+                            currentLanguage == "EN"
+                                ? $"{streamerName} changed category from '{oldCategory}' to '{newCategory}'."
+                                : $"{streamerName} сменил категорию с '{oldCategory}' на '{newCategory}'."
+                        );
                     }
 
-                    // Добавляем запись в журнал
                     string time = DateTime.Now.ToString("HH:mm:ss");
                     AddToHistory(time, streamerName, newCategory);
 
                     streamerCategories[streamerName] = newCategory;
                 }
-                else if (!FilterUnchangedCategories) // Используем значение из настроек
+                else if (!FilterUnchangedCategories)
                 {
-                    // Категория не изменилась, но фильтр отключен
                     string time = DateTime.Now.ToString("HH:mm:ss");
                     AddToHistory(time, streamerName, newCategory);
                 }
             }
             else
             {
-                // Первая запись о стримере
                 streamerCategories[streamerName] = newCategory;
 
-                // Добавляем запись в журнал
                 string time = DateTime.Now.ToString("HH:mm:ss");
                 AddToHistory(time, streamerName, newCategory);
             }
 
-            // Добавляем запись в журнал, если стример стал оффлайн
             if (newCategory == "Offline" && streamerCategories[streamerName] != "Offline")
             {
                 string time = DateTime.Now.ToString("HH:mm:ss");
@@ -233,19 +270,22 @@ namespace TwitchCategoryTracker
 
         private void AddToHistory(string time, string streamerName, string category)
         {
-            // Проверяем, что ListViewItem создается и добавляется в lstHistory
             var item = new ListViewItem(new[] { time, streamerName, category });
             lstHistory.Items.Add(item);
-
-            // Прокручиваем журнал вниз, чтобы показать последнюю запись
             lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
+
+            if (SaveLogToFile)
+            {
+                string logEntry = $"{time} - {streamerName}: {category}";
+                File.AppendAllText("history.log", logEntry + Environment.NewLine);
+            }
         }
 
         private void ShowToastNotification(string title, string message)
         {
-            if (!notificationsEnabled)
+            if (notificationMode == 0)
             {
-                return;
+                return; // Уведомления выключены
             }
 
             string soundPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Notif.wav");
@@ -256,15 +296,33 @@ namespace TwitchCategoryTracker
                 return;
             }
 
+            // Если режим "Только звук", просто воспроизводим звук
+            if (notificationMode == 3)
+            {
+                try
+                {
+                    using (var player = new System.Media.SoundPlayer(soundPath))
+                    {
+                        player.Play(); // Воспроизводим звук
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to play sound: {ex.Message}");
+                }
+                return;
+            }
+
+            // Для остальных режимов показываем текстовое уведомление и звук (если нужно)
             var toast = new ToastContentBuilder()
                 .AddText(title)
                 .AddText(message);
 
-            if (notificationsEnabled)
+            if (notificationMode == 2) // Уведомления со звуком
             {
                 toast.AddAudio(new Uri(soundPath), silent: false);
             }
-            else
+            else if (notificationMode == 1) // Уведомления без звука
             {
                 toast.AddAudio(new Uri("ms-winsoundevent:Notification.Default"), silent: true);
             }
@@ -274,7 +332,7 @@ namespace TwitchCategoryTracker
 
         private void UpdateTrayIconToolTip()
         {
-            StringBuilder tooltipText = new StringBuilder("Текущие категории:\n");
+            StringBuilder tooltipText = new StringBuilder(currentLanguage == "EN" ? "Current categories:\n" : "Текущие категории:\n");
             foreach (var streamer in trackedStreamers)
             {
                 if (streamerCategories.ContainsKey(streamer))
@@ -305,7 +363,9 @@ namespace TwitchCategoryTracker
         {
             if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
             {
-                MessageBox.Show("Please enter Client ID and Client Secret.");
+                MessageBox.Show(currentLanguage == "EN"
+                    ? "Please enter Client ID and Client Secret."
+                    : "Пожалуйста, введите Client ID и Client Secret.");
                 return;
             }
 
@@ -331,7 +391,9 @@ namespace TwitchCategoryTracker
                 }
                 else
                 {
-                    MessageBox.Show("Failed to get access token. Check your Client ID and Client Secret.");
+                    MessageBox.Show(currentLanguage == "EN"
+                        ? "Failed to get access token. Check your Client ID and Client Secret."
+                        : "Не удалось получить токен доступа. Проверьте Client ID и Client Secret.");
                     accessToken = null;
                 }
             }
@@ -411,20 +473,21 @@ namespace TwitchCategoryTracker
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            // Открываем окно настроек
-            using (var settingsForm = new SettingsForm(ClientId, ClientSecret, checkInterval, FilterUnchangedCategories))
+            using (var settingsForm = new SettingsForm(ClientId, ClientSecret, checkInterval, FilterUnchangedCategories, SaveLogToFile, currentLanguage, notificationMode))
             {
                 if (settingsForm.ShowDialog() == DialogResult.OK)
                 {
-                    // Сохраняем новые значения
                     ClientId = settingsForm.ClientId;
                     ClientSecret = settingsForm.ClientSecret;
                     checkInterval = settingsForm.CheckInterval;
-                    FilterUnchangedCategories = settingsForm.FilterUnchangedCategories; // Обновляем значение
+                    FilterUnchangedCategories = settingsForm.FilterUnchangedCategories;
+                    SaveLogToFile = settingsForm.SaveLogToFile;
+                    currentLanguage = settingsForm.CurrentLanguage;
+                    notificationMode = settingsForm.NotificationMode;
 
-                    // Сохраняем настройки в файл
                     SaveSettings();
-                    MessageBox.Show("Settings saved successfully.");
+                    UpdateLanguage();
+                    UpdateTrayMenu();
                 }
             }
         }
@@ -433,13 +496,14 @@ namespace TwitchCategoryTracker
         {
             if (trackedStreamers.Count == 0)
             {
-                MessageBox.Show("Please add at least one streamer to track.");
+                MessageBox.Show(currentLanguage == "EN"
+                    ? "Please add at least one streamer to track."
+                    : "Пожалуйста, добавьте хотя бы одного стримера для отслеживания.");
                 return;
             }
 
             if (isTracking)
             {
-                MessageBox.Show("Already tracking streamers.");
                 return;
             }
 
@@ -447,7 +511,7 @@ namespace TwitchCategoryTracker
             btnStartTracking.Enabled = false;
             btnStopTracking.Enabled = true;
 
-            remainingTime = checkInterval; // Устанавливаем начальное значение таймера
+            remainingTime = checkInterval;
             UpdateCountdownLabel();
             countdownTimer.Start();
 
@@ -470,12 +534,9 @@ namespace TwitchCategoryTracker
 
                 trackingTimer.Stop();
                 countdownTimer.Stop();
-                lblCountdown.Text = "Отслеживание остановлено.";
-                MessageBox.Show("Tracking stopped.");
-            }
-            else
-            {
-                MessageBox.Show("Tracking is not active.");
+                lblCountdown.Text = currentLanguage == "EN"
+                    ? "Tracking stopped."
+                    : "Отслеживание остановлено.";
             }
         }
 
@@ -508,8 +569,10 @@ namespace TwitchCategoryTracker
                     writer.WriteLine(ClientSecret);
                     writer.WriteLine(checkInterval);
                     writer.WriteLine(string.Join(",", trackedStreamers));
-                    writer.WriteLine(notificationsEnabled);
-                    writer.WriteLine(FilterUnchangedCategories); // Сохраняем значение
+                    writer.WriteLine(notificationMode);
+                    writer.WriteLine(FilterUnchangedCategories);
+                    writer.WriteLine(SaveLogToFile);
+                    writer.WriteLine(currentLanguage);
                 }
             }
             catch (Exception ex)
@@ -538,29 +601,32 @@ namespace TwitchCategoryTracker
                             trackedStreamers.AddRange(streamers.Split(','));
                             lstTrackedStreamers.Items.AddRange(trackedStreamers.ToArray());
                         }
-                        if (bool.TryParse(reader.ReadLine(), out bool notifications))
+                        if (int.TryParse(reader.ReadLine(), out int mode))
                         {
-                            notificationsEnabled = notifications;
+                            notificationMode = mode;
                         }
                         if (bool.TryParse(reader.ReadLine(), out bool filterUnchangedCategories))
                         {
-                            FilterUnchangedCategories = filterUnchangedCategories; // Загружаем значение
+                            FilterUnchangedCategories = filterUnchangedCategories;
                         }
+                        if (bool.TryParse(reader.ReadLine(), out bool saveLogToFile))
+                        {
+                            SaveLogToFile = saveLogToFile;
+                        }
+                        currentLanguage = reader.ReadLine() ?? "EN";
                     }
 
                     UpdateTrayMenu();
-
-                    await CheckLoadedStreamersCategoriesAsync();
                 }
                 else
                 {
-                    UpdateButtonsState(false); // Обновляем состояние кнопок без проверки на сохранение настроек
+                    UpdateButtonsState(false);
                 }
             }
             catch (Exception ex)
             {
                 LogError($"Failed to load settings: {ex.Message}");
-                UpdateButtonsState(false); // Обновляем состояние кнопок без проверки на сохранение настроек
+                UpdateButtonsState(false);
             }
         }
 
@@ -592,7 +658,9 @@ namespace TwitchCategoryTracker
             string streamerName = ExtractStreamerName(txtStreamerName.Text.Trim());
             if (string.IsNullOrEmpty(streamerName))
             {
-                MessageBox.Show("Please enter a streamer name or URL.");
+                MessageBox.Show(currentLanguage == "EN"
+                    ? "Please enter a streamer name or URL."
+                    : "Пожалуйста, введите имя стримера или URL.");
                 return;
             }
 
@@ -605,7 +673,9 @@ namespace TwitchCategoryTracker
             }
             else
             {
-                MessageBox.Show("Streamer is already in the list.");
+                MessageBox.Show(currentLanguage == "EN"
+                    ? "Streamer is already in the list."
+                    : "Стример уже в списке.");
             }
         }
 
@@ -613,30 +683,22 @@ namespace TwitchCategoryTracker
         {
             if (lstTrackedStreamers.SelectedItem != null)
             {
-                // Получаем выбранный элемент
                 string selectedItem = lstTrackedStreamers.SelectedItem.ToString();
-
-                // Убираем статус (например, "[LIVE] " или "[OFFLINE] ")
                 string streamerName = selectedItem
                     .Replace("[LIVE]", "")
                     .Replace("[OFFLINE]", "")
                     .Trim();
 
-                // Удаляем стримера из списка отслеживаемых
                 if (trackedStreamers.Contains(streamerName))
                 {
                     trackedStreamers.Remove(streamerName);
 
-                    // Удаляем стримера из словаря категорий
                     if (streamerCategories.ContainsKey(streamerName))
                     {
                         streamerCategories.Remove(streamerName);
                     }
 
-                    // Обновляем отображаемый список
                     UpdateStreamersList();
-
-                    // Сохраняем настройки
                     SaveSettings();
                 }
             }
@@ -651,19 +713,23 @@ namespace TwitchCategoryTracker
                 {
                     string time = DateTime.Now.ToString("HH:mm:ss");
                     AddToHistory(time, streamer, categories[streamer]);
+
+                    streamerCategories[streamer] = categories[streamer];
                 }
             }
+
+            UpdateStreamersList();
         }
 
         private void UpdateButtonsState(bool isTrackingActive = false)
         {
-            btnStartTracking.Enabled = !isTrackingActive; // Кнопка "Start Tracking" активна, если отслеживание не запущено
-            btnStopTracking.Enabled = isTrackingActive;   // Кнопка "Stop Tracking" активна, если отслеживание запущено
-            btnAddStreamer.Enabled = !isTrackingActive;   // Кнопка "Add Streamer" активна, если отслеживание не запущено
-            btnRemoveStreamer.Enabled = !isTrackingActive; // Кнопка "Remove Streamer" активна, если отслеживание не запущено
-            btnCheckAllCategories.Enabled = !isTrackingActive; // Кнопка "Check All" активна, если отслеживание не запущено
-            btnClearHistory.Enabled = true; // Кнопка "Clear History" всегда активна
-            btnRemoveAllStreamers.Enabled = !isTrackingActive; // Кнопка "Remove All Streamers" активна, если отслеживание не запущено
+            btnStartTracking.Enabled = !isTrackingActive;
+            btnStopTracking.Enabled = isTrackingActive;
+            btnAddStreamer.Enabled = !isTrackingActive;
+            btnRemoveStreamer.Enabled = !isTrackingActive;
+            btnCheckAllCategories.Enabled = !isTrackingActive;
+            btnClearHistory.Enabled = true;
+            btnRemoveAllStreamers.Enabled = !isTrackingActive;
         }
 
         private void UpdateStreamersList()
@@ -683,18 +749,30 @@ namespace TwitchCategoryTracker
             }
         }
 
+        private void UpdateLanguage()
+        {
+            lblStreamerName.Text = currentLanguage == "EN" ? "Streamer Name" : "Имя стримера";
+            btnAddStreamer.Text = currentLanguage == "EN" ? "Add" : "Добавить";
+            btnRemoveStreamer.Text = currentLanguage == "EN" ? "Remove" : "Удалить";
+            btnStartTracking.Text = currentLanguage == "EN" ? "Start Tracking" : "Начать отслеживание";
+            btnStopTracking.Text = currentLanguage == "EN" ? "Stop Tracking" : "Остановить отслеживание";
+            btnCheckAllCategories.Text = currentLanguage == "EN" ? "Check All" : "Проверить всех";
+            btnClearHistory.Text = currentLanguage == "EN" ? "Clear History" : "Очистить журнал";
+            btnRemoveAllStreamers.Text = currentLanguage == "EN" ? "Remove All Streamers" : "Удалить всех стримеров";
+            btnSettings.Text = currentLanguage == "EN" ? "Settings" : "Настройки";
+            lblTrackedStreamers.Text = currentLanguage == "EN" ? "Tracked Streamers" : "Отслеживаемые стримеры";
+        }
+
         private void txtStreamerName_TextChanged(object sender, EventArgs e)
         {
         }
 
         private void lblTrackedStreamers_Click(object sender, EventArgs e)
         {
-
         }
 
         private void lstHistory_SelectedIndexChanged(object sender, EventArgs e)
         {
-
         }
     }
 }
