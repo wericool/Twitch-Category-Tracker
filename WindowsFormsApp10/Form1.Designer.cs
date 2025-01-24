@@ -12,7 +12,6 @@
         private System.Windows.Forms.Button btnAddStreamer;
         private System.Windows.Forms.Button btnRemoveStreamer;
         private System.Windows.Forms.ListBox lstTrackedStreamers;
-        private System.Windows.Forms.Label lblTrackedStreamers;
         private System.Windows.Forms.Button btnClearHistory;
         private System.Windows.Forms.Button btnCheckAllCategories;
         private System.Windows.Forms.Label lblCountdown;
@@ -39,7 +38,6 @@
             this.btnAddStreamer = new System.Windows.Forms.Button();
             this.btnRemoveStreamer = new System.Windows.Forms.Button();
             this.lstTrackedStreamers = new System.Windows.Forms.ListBox();
-            this.lblTrackedStreamers = new System.Windows.Forms.Label();
             this.btnClearHistory = new System.Windows.Forms.Button();
             this.btnCheckAllCategories = new System.Windows.Forms.Button();
             this.lblCountdown = new System.Windows.Forms.Label();
@@ -50,9 +48,9 @@
             // txtStreamerName
             // 
             this.txtStreamerName.BackColor = System.Drawing.Color.Silver;
-            this.txtStreamerName.Location = new System.Drawing.Point(98, 16);
+            this.txtStreamerName.Location = new System.Drawing.Point(3, 18);
             this.txtStreamerName.Name = "txtStreamerName";
-            this.txtStreamerName.Size = new System.Drawing.Size(224, 20);
+            this.txtStreamerName.Size = new System.Drawing.Size(211, 20);
             this.txtStreamerName.TabIndex = 0;
             this.txtStreamerName.TextChanged += new System.EventHandler(this.txtStreamerName_TextChanged);
             // 
@@ -66,7 +64,7 @@
             // 
             // btnStartTracking
             // 
-            this.btnStartTracking.Location = new System.Drawing.Point(15, 418);
+            this.btnStartTracking.Location = new System.Drawing.Point(3, 384);
             this.btnStartTracking.Name = "btnStartTracking";
             this.btnStartTracking.Size = new System.Drawing.Size(103, 23);
             this.btnStartTracking.TabIndex = 7;
@@ -77,7 +75,7 @@
             // btnStopTracking
             // 
             this.btnStopTracking.Enabled = false;
-            this.btnStopTracking.Location = new System.Drawing.Point(118, 418);
+            this.btnStopTracking.Location = new System.Drawing.Point(106, 384);
             this.btnStopTracking.Name = "btnStopTracking";
             this.btnStopTracking.Size = new System.Drawing.Size(103, 23);
             this.btnStopTracking.TabIndex = 8;
@@ -90,7 +88,7 @@
             this.lstHistory.FullRowSelect = true;
             this.lstHistory.GridLines = true;
             this.lstHistory.HideSelection = false;
-            this.lstHistory.Location = new System.Drawing.Point(15, 206);
+            this.lstHistory.Location = new System.Drawing.Point(3, 172);
             this.lstHistory.Name = "lstHistory";
             this.lstHistory.Size = new System.Drawing.Size(309, 206);
             this.lstHistory.TabIndex = 9;
@@ -101,25 +99,25 @@
             // lblStreamerName
             // 
             this.lblStreamerName.AutoSize = true;
-            this.lblStreamerName.Location = new System.Drawing.Point(12, 19);
+            this.lblStreamerName.Location = new System.Drawing.Point(4, 2);
             this.lblStreamerName.Name = "lblStreamerName";
-            this.lblStreamerName.Size = new System.Drawing.Size(80, 13);
+            this.lblStreamerName.Size = new System.Drawing.Size(49, 13);
             this.lblStreamerName.TabIndex = 12;
-            this.lblStreamerName.Text = "Streamer Name";
+            this.lblStreamerName.Text = "Streamer";
             // 
             // btnAddStreamer
             // 
-            this.btnAddStreamer.Location = new System.Drawing.Point(118, 42);
+            this.btnAddStreamer.Location = new System.Drawing.Point(220, 17);
             this.btnAddStreamer.Name = "btnAddStreamer";
-            this.btnAddStreamer.Size = new System.Drawing.Size(103, 23);
+            this.btnAddStreamer.Size = new System.Drawing.Size(43, 23);
             this.btnAddStreamer.TabIndex = 16;
-            this.btnAddStreamer.Text = "Add";
+            this.btnAddStreamer.Text = "+";
             this.btnAddStreamer.UseVisualStyleBackColor = true;
             this.btnAddStreamer.Click += new System.EventHandler(this.btnAddStreamer_Click);
             // 
             // btnRemoveStreamer
             // 
-            this.btnRemoveStreamer.Location = new System.Drawing.Point(118, 168);
+            this.btnRemoveStreamer.Location = new System.Drawing.Point(106, 143);
             this.btnRemoveStreamer.Name = "btnRemoveStreamer";
             this.btnRemoveStreamer.Size = new System.Drawing.Size(103, 23);
             this.btnRemoveStreamer.TabIndex = 17;
@@ -130,26 +128,14 @@
             // lstTrackedStreamers
             // 
             this.lstTrackedStreamers.FormattingEnabled = true;
-            this.lstTrackedStreamers.Location = new System.Drawing.Point(15, 71);
+            this.lstTrackedStreamers.Location = new System.Drawing.Point(3, 46);
             this.lstTrackedStreamers.Name = "lstTrackedStreamers";
             this.lstTrackedStreamers.Size = new System.Drawing.Size(309, 95);
             this.lstTrackedStreamers.TabIndex = 18;
             // 
-            // lblTrackedStreamers
-            // 
-            this.lblTrackedStreamers.AutoSize = true;
-            this.lblTrackedStreamers.BackColor = System.Drawing.SystemColors.Window;
-            this.lblTrackedStreamers.ForeColor = System.Drawing.Color.DimGray;
-            this.lblTrackedStreamers.Location = new System.Drawing.Point(224, 152);
-            this.lblTrackedStreamers.Name = "lblTrackedStreamers";
-            this.lblTrackedStreamers.Size = new System.Drawing.Size(97, 13);
-            this.lblTrackedStreamers.TabIndex = 19;
-            this.lblTrackedStreamers.Text = "Tracked Streamers";
-            this.lblTrackedStreamers.Click += new System.EventHandler(this.lblTrackedStreamers_Click);
-            // 
             // btnClearHistory
             // 
-            this.btnClearHistory.Location = new System.Drawing.Point(221, 418);
+            this.btnClearHistory.Location = new System.Drawing.Point(209, 384);
             this.btnClearHistory.Name = "btnClearHistory";
             this.btnClearHistory.Size = new System.Drawing.Size(103, 23);
             this.btnClearHistory.TabIndex = 20;
@@ -159,7 +145,7 @@
             // 
             // btnCheckAllCategories
             // 
-            this.btnCheckAllCategories.Location = new System.Drawing.Point(15, 168);
+            this.btnCheckAllCategories.Location = new System.Drawing.Point(3, 143);
             this.btnCheckAllCategories.Name = "btnCheckAllCategories";
             this.btnCheckAllCategories.Size = new System.Drawing.Size(103, 23);
             this.btnCheckAllCategories.TabIndex = 23;
@@ -170,15 +156,15 @@
             // lblCountdown
             // 
             this.lblCountdown.AutoSize = true;
-            this.lblCountdown.Location = new System.Drawing.Point(18, 444);
+            this.lblCountdown.Location = new System.Drawing.Point(4, 410);
             this.lblCountdown.Name = "lblCountdown";
-            this.lblCountdown.Size = new System.Drawing.Size(152, 13);
+            this.lblCountdown.Size = new System.Drawing.Size(76, 13);
             this.lblCountdown.TabIndex = 24;
             this.lblCountdown.Text = "Next check in:";
             // 
             // btnRemoveAllStreamers
             // 
-            this.btnRemoveAllStreamers.Location = new System.Drawing.Point(221, 168);
+            this.btnRemoveAllStreamers.Location = new System.Drawing.Point(209, 143);
             this.btnRemoveAllStreamers.Name = "btnRemoveAllStreamers";
             this.btnRemoveAllStreamers.Size = new System.Drawing.Size(103, 23);
             this.btnRemoveAllStreamers.TabIndex = 25;
@@ -188,23 +174,22 @@
             // 
             // btnSettings
             // 
-            this.btnSettings.Location = new System.Drawing.Point(221, 42);
+            this.btnSettings.Location = new System.Drawing.Point(269, 17);
             this.btnSettings.Name = "btnSettings";
-            this.btnSettings.Size = new System.Drawing.Size(103, 23);
+            this.btnSettings.Size = new System.Drawing.Size(43, 23);
             this.btnSettings.TabIndex = 26;
-            this.btnSettings.Text = "Settings";
+            this.btnSettings.Text = "⚙";
             this.btnSettings.UseVisualStyleBackColor = true;
             this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
             // 
             // Form1
             // 
-            this.ClientSize = new System.Drawing.Size(335, 463);
+            this.ClientSize = new System.Drawing.Size(318, 430);
             this.Controls.Add(this.btnSettings);
             this.Controls.Add(this.btnRemoveAllStreamers);
             this.Controls.Add(this.lblCountdown);
             this.Controls.Add(this.btnCheckAllCategories);
             this.Controls.Add(this.btnClearHistory);
-            this.Controls.Add(this.lblTrackedStreamers);
             this.Controls.Add(this.lstTrackedStreamers);
             this.Controls.Add(this.btnRemoveStreamer);
             this.Controls.Add(this.btnAddStreamer);
@@ -217,8 +202,10 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
             this.Text = "Twitch Category Tracker";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
     }
 }

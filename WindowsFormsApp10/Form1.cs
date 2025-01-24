@@ -24,7 +24,6 @@ namespace TwitchCategoryTracker
         private System.Windows.Forms.Timer trackingTimer;
         private System.Windows.Forms.Timer countdownTimer;
         private Dictionary<string, string> streamerCategories = new Dictionary<string, string>();
-        private Dictionary<string, bool> streamerOfflineLogged = new Dictionary<string, bool>(); // Новый словарь для отслеживания оффлайн-записей
         private NotifyIcon trayIcon;
         private ContextMenuStrip trayMenu;
         private int notificationMode = 2;
@@ -47,24 +46,330 @@ namespace TwitchCategoryTracker
             _ = LoadSettings();
             UpdateButtonsState(false);
 
-            lstHistory.Columns.Add("Time", 60);
-            lstHistory.Columns.Add("Streamer", 100);
-            lstHistory.Columns.Add("Category", 120);
+            // Инициализация столбцов с учетом текущего языка
+            lstHistory.Columns.Add(CurrentLanguage == "EN" ? "Time" : "Время", 60);
+            lstHistory.Columns.Add(CurrentLanguage == "EN" ? "Streamer" : "Стример", 100);
+            lstHistory.Columns.Add(CurrentLanguage == "EN" ? "Category" : "Категория", 120);
 
             UpdateLanguage();
+        }
+
+        private void UpdateCountdownLabel()
+        {
+            lblCountdown.Text = CurrentLanguage == "EN"
+                ? $"Next check in: {remainingTime} sec."
+                : $"Следующая проверка через: {remainingTime} сек.";
+        }
+
+        private async Task CheckCategoryChangeAsync(string streamerName, string newCategory, bool isTimerCheck)
+        {
+            bool isOffline = newCategory == "Offline";
+            bool categoryChanged = false;
+            bool isFirstCheck = !streamerCategories.ContainsKey(streamerName);
+
+            if (streamerCategories.TryGetValue(streamerName, out string oldCategory))
+            {
+                categoryChanged = oldCategory != newCategory;
+            }
+
+            // Логика для онлайн стримеров
+            if (!isOffline)
+            {
+                if (categoryChanged || !FilterUnchangedCategories)
+                {
+                    AddHistoryEntry(streamerName, newCategory, categoryChanged && isTimerCheck);
+                }
+            }
+            // Логика для оффлайн стримеров (только если опция "Не добавлять оффлайн" ВЫКЛЮЧЕНА)
+            else if (!FilterOfflineStreamers)
+            {
+                // Добавляем если: первая проверка ИЛИ категория изменилась ИЛИ разрешены неизмененные
+                if (isFirstCheck || categoryChanged || !FilterUnchangedCategories)
+                {
+                    AddHistoryEntry(streamerName, newCategory, false);
+                }
+            }
+
+            // Обновляем текущую категорию
+            streamerCategories[streamerName] = newCategory;
+        }
+
+        private void RemoveLastHistoryEntryIfOffline(string streamerName)
+        {
+            for (int i = lstHistory.Items.Count - 1; i >= 0; i--)
+            {
+                if (lstHistory.Items[i].SubItems[1].Text == streamerName &&
+                    lstHistory.Items[i].SubItems[2].Text == "Offline")
+                {
+                    lstHistory.Items.RemoveAt(i);
+                    break;
+                }
+            }
+        }
+
+        private void AddHistoryEntry(string streamerName, string category, bool isChange)
+        {
+            string time = DateTime.Now.ToString("HH:mm:ss");
+
+            if (isChange && category != "Offline" && notificationMode > 0)
+            {
+                ShowToastNotification(
+                    CurrentLanguage == "EN" ? "Category Changed" : "Категория изменена",
+                    CurrentLanguage == "EN"
+                        ? $"{streamerName} started streaming {category}"
+                        : $"{streamerName} начал стримить {category}"
+                );
+            }
+
+            var newItem = new ListViewItem(new[] { time, streamerName, category });
+            lstHistory.Items.Add(newItem);
+            lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
+
+            if (SaveLogToFile)
+            {
+                File.AppendAllText("history.log", $"{time} - {streamerName}: {category}{Environment.NewLine}");
+            }
+        }
+
+        private void ShowToastNotification(string title, string message)
+        {
+            if (notificationMode == 0)
+            {
+                return;
+            }
+
+            string soundPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Notif.wav");
+
+            if (!File.Exists(soundPath))
+            {
+                LogError($"Sound file not found: {soundPath}");
+                return;
+            }
+
+            if (notificationMode == 3)
+            {
+                try
+                {
+                    using (var player = new System.Media.SoundPlayer(soundPath))
+                    {
+                        player.Play();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Failed to play sound: {ex.Message}");
+                }
+                return;
+            }
+
+            var toast = new ToastContentBuilder()
+                .AddText(title)
+                .AddText(message);
+
+            if (notificationMode == 2)
+            {
+                toast.AddAudio(new Uri(soundPath), silent: false);
+            }
+            else if (notificationMode == 1)
+            {
+                toast.AddAudio(new Uri("ms-winsoundevent:Notification.Default"), silent: true);
+            }
+
+            toast.Show();
+        }
+
+        private void LogError(string errorMessage)
+        {
+            string time = DateTime.Now.ToString("HH:mm:ss");
+            AddHistoryEntry("Error", errorMessage, true);
+        }
+
+        private async Task<Dictionary<string, string>> GetStreamersCategoriesAsync(IEnumerable<string> streamerNames)
+        {
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                await GetAccessTokenAsync();
+            }
+
+            var categories = new Dictionary<string, string>();
+            var streamerList = streamerNames.ToList();
+            int batchSize = 100;
+
+            for (int i = 0; i < streamerList.Count; i += batchSize)
+            {
+                var batch = streamerList.Skip(i).Take(batchSize);
+                var batchQuery = string.Join("&user_login=", batch);
+                var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.twitch.tv/helix/streams?user_login={batchQuery}");
+                request.Headers.Add("Client-ID", ClientId);
+                request.Headers.Add("Authorization", $"Bearer {accessToken}");
+
+                try
+                {
+                    var response = await client.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+
+                    var responseData = await response.Content.ReadAsStringAsync();
+                    var json = JObject.Parse(responseData);
+
+                    var streams = json["data"] as JArray;
+                    if (streams != null)
+                    {
+                        foreach (var stream in streams)
+                        {
+                            var streamerName = stream["user_login"]?.ToString();
+                            var gameName = stream["game_name"]?.ToString();
+                            if (streamerName != null)
+                            {
+                                categories[streamerName] = gameName ?? "No category";
+                            }
+                        }
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    LogError($"HTTP Error: {ex.Message}");
+                }
+                catch (Exception ex)
+                {
+                    LogError($"Error: {ex.Message}");
+                }
+            }
+
+            foreach (var streamer in streamerNames)
+            {
+                if (!categories.ContainsKey(streamer))
+                {
+                    categories[streamer] = "Offline";
+                }
+            }
+
+            return categories;
+        }
+
+        private async Task GetAccessTokenAsync()
+        {
+            if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
+            {
+                MessageBox.Show(CurrentLanguage == "EN"
+                    ? "Please enter Client ID and Client Secret."
+                    : "Пожалуйста, введите Client ID и Client Secret.");
+                return;
+            }
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://id.twitch.tv/oauth2/token");
+            request.Content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("client_id", ClientId),
+                new KeyValuePair<string, string>("client_secret", ClientSecret),
+                new KeyValuePair<string, string>("grant_type", "client_credentials")
+            });
+
+            try
+            {
+                var response = await client.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+
+                var responseData = await response.Content.ReadAsStringAsync();
+                var json = JObject.Parse(responseData);
+
+                if (json["access_token"] != null)
+                {
+                    accessToken = json["access_token"].ToString();
+                }
+                else
+                {
+                    MessageBox.Show(CurrentLanguage == "EN"
+                        ? "Failed to get access token. Check your Client ID and Client Secret."
+                        : "Не удалось получить токен доступа. Проверьте Client ID и Client Secret.");
+                    accessToken = null;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                LogError($"HTTP Error: {ex.Message}");
+                accessToken = null;
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error: {ex.Message}");
+                accessToken = null;
+            }
+        }
+
+        private async void TrackingTimer_Tick(object sender, EventArgs e)
+        {
+            await CheckAllStreamersCategoriesAsync(true);
+            remainingTime = checkInterval;
+            UpdateCountdownLabel();
+        }
+
+        private void CountdownTimer_Tick(object sender, EventArgs e)
+        {
+            if (remainingTime > 0)
+            {
+                remainingTime--;
+                UpdateCountdownLabel();
+            }
+        }
+
+        private async Task CheckAllStreamersCategoriesAsync(bool isTimerCheck = false)
+        {
+            var categories = await GetStreamersCategoriesAsync(trackedStreamers);
+            if (categories != null)
+            {
+                foreach (var streamer in trackedStreamers)
+                {
+                    await CheckCategoryChangeAsync(streamer, categories[streamer], isTimerCheck);
+                }
+            }
+            UpdateTrayIconToolTip();
+            UpdateStreamersList();
+        }
+
+        private void UpdateTrayIconToolTip()
+        {
+            StringBuilder tooltipText = new StringBuilder(CurrentLanguage == "EN" ? "Current categories:\n" : "Текущие категории:\n");
+            foreach (var streamer in trackedStreamers)
+            {
+                if (streamerCategories.ContainsKey(streamer))
+                {
+                    tooltipText.AppendLine($"{streamer}: {streamerCategories[streamer]}");
+                }
+            }
+
+            string finalText = tooltipText.ToString();
+            if (finalText.Length > 63)
+            {
+                finalText = finalText.Substring(0, 60) + "...";
+            }
+
+            trayIcon.Text = finalText;
+        }
+
+        private void UpdateLanguage()
+        {
+            lblStreamerName.Text = CurrentLanguage == "EN" ? "Streamer name or Link" : "Имя стримера или ссылка";
+            btnAddStreamer.Text = "+";
+            btnRemoveStreamer.Text = CurrentLanguage == "EN" ? "Remove" : "Удалить";
+            btnStartTracking.Text = CurrentLanguage == "EN" ? "Start Tracking" : "Начать отслеживание";
+            btnStopTracking.Text = CurrentLanguage == "EN" ? "Stop Tracking" : "Остановить отслеживание";
+            btnCheckAllCategories.Text = CurrentLanguage == "EN" ? "Check All" : "Проверить всех";
+            btnClearHistory.Text = CurrentLanguage == "EN" ? "Clear History" : "Очистить журнал";
+            btnRemoveAllStreamers.Text = CurrentLanguage == "EN" ? "Remove All Streamers" : "Удалить всех стримеров";
+            btnSettings.Text = "⚙";
         }
 
         private void InitializeToolTips()
         {
             ToolTip toolTip = new ToolTip();
-            toolTip.SetToolTip(txtStreamerName, "Enter the streamer's name, e.g., 'shroud'.");
-            toolTip.SetToolTip(btnStartTracking, "Start tracking streamers' categories.");
-            toolTip.SetToolTip(btnStopTracking, "Stop tracking.");
-            toolTip.SetToolTip(btnAddStreamer, "Add a streamer to the tracking list.");
-            toolTip.SetToolTip(btnRemoveStreamer, "Remove the selected streamer from the list.");
-            toolTip.SetToolTip(btnClearHistory, "Clear the history.");
-            toolTip.SetToolTip(btnCheckAllCategories, "Check all streamers' categories.");
-            toolTip.SetToolTip(btnRemoveAllStreamers, "Remove all streamers from the list.");
+            toolTip.SetToolTip(txtStreamerName, CurrentLanguage == "EN" ? "Enter the streamer's name or link, e.g., 'shroud' or 'https://www.twitch.tv/shroud'." : "Введите имя стримера или ссылку, например, 'shroud' или 'https://www.twitch.tv/shroud'.");
+            toolTip.SetToolTip(btnStartTracking, CurrentLanguage == "EN" ? "Start tracking streamers' categories." : "Начать отслеживание категорий стримеров.");
+            toolTip.SetToolTip(btnStopTracking, CurrentLanguage == "EN" ? "Stop tracking." : "Остановить отслеживание.");
+            toolTip.SetToolTip(btnAddStreamer, CurrentLanguage == "EN" ? "Add a streamer to the tracking list." : "Добавить стримера в список отслеживания.");
+            toolTip.SetToolTip(btnRemoveStreamer, CurrentLanguage == "EN" ? "Remove the selected streamer from the list." : "Удалить выбранного стримера из списка.");
+            toolTip.SetToolTip(btnClearHistory, CurrentLanguage == "EN" ? "Clear the history." : "Очистить историю.");
+            toolTip.SetToolTip(btnCheckAllCategories, CurrentLanguage == "EN" ? "Check all streamers' categories." : "Проверить категории всех стримеров.");
+            toolTip.SetToolTip(btnRemoveAllStreamers, CurrentLanguage == "EN" ? "Remove all streamers from the list." : "Удалить всех стримеров из списка.");
         }
 
         private void InitializeTrayIcon()
@@ -189,316 +494,6 @@ namespace TwitchCategoryTracker
             base.OnResize(e);
         }
 
-        private async void TrackingTimer_Tick(object sender, EventArgs e)
-        {
-            await CheckAllStreamersCategoriesAsync();
-            remainingTime = checkInterval;
-            UpdateCountdownLabel();
-        }
-
-        private void CountdownTimer_Tick(object sender, EventArgs e)
-        {
-            if (remainingTime > 0)
-            {
-                remainingTime--;
-                UpdateCountdownLabel();
-            }
-        }
-
-        private void UpdateCountdownLabel()
-        {
-            lblCountdown.Text = CurrentLanguage == "EN"
-                ? $"Next check in: {remainingTime} sec."
-                : $"Следующая проверка через: {remainingTime} сек.";
-        }
-
-        private async Task CheckAllStreamersCategoriesAsync()
-        {
-            var categories = await GetStreamersCategoriesAsync(trackedStreamers);
-            if (categories != null)
-            {
-                foreach (var streamer in trackedStreamers)
-                {
-                    await CheckCategoryChangeAsync(streamer, categories[streamer]);
-                }
-            }
-            UpdateTrayIconToolTip();
-            UpdateStreamersList();
-        }
-
-        private async Task CheckCategoryChangeAsync(string streamerName, string newCategory)
-        {
-            if (streamerCategories.ContainsKey(streamerName))
-            {
-                string oldCategory = streamerCategories[streamerName];
-                if (oldCategory != newCategory)
-                {
-                    if (notificationMode > 0)
-                    {
-                        ShowToastNotification(
-                            CurrentLanguage == "EN" ? "Category Changed" : "Категория изменена",
-                            CurrentLanguage == "EN"
-                                ? $"{streamerName} changed category from '{oldCategory}' to '{newCategory}'."
-                                : $"{streamerName} сменил категорию с '{oldCategory}' на '{newCategory}'."
-                        );
-                    }
-
-                    string time = DateTime.Now.ToString("HH:mm:ss");
-                    AddToHistory(time, streamerName, newCategory);
-
-                    streamerCategories[streamerName] = newCategory;
-                }
-                else if (!FilterUnchangedCategories)
-                {
-                    string time = DateTime.Now.ToString("HH:mm:ss");
-                    AddToHistory(time, streamerName, newCategory);
-                }
-            }
-            else
-            {
-                streamerCategories[streamerName] = newCategory;
-
-                string time = DateTime.Now.ToString("HH:mm:ss");
-                AddToHistory(time, streamerName, newCategory);
-            }
-        }
-
-        private void RemoveOfflineEntriesFromHistory(string streamerName)
-        {
-            for (int i = lstHistory.Items.Count - 1; i >= 0; i--)
-            {
-                var item = lstHistory.Items[i];
-                if (item.SubItems[1].Text == streamerName && item.SubItems[2].Text == "Offline")
-                {
-                    lstHistory.Items.RemoveAt(i);
-                }
-            }
-        }
-
-        private void AddToHistory(string time, string streamerName, string category)
-        {
-            // Если включена настройка "не добавлять оффлайн стримеров в журнал" и категория "Offline", пропускаем добавление
-            if (FilterOfflineStreamers && category == "Offline")
-            {
-                return;
-            }
-
-            // Добавляем новую запись в журнал
-            var newItem = new ListViewItem(new[] { time, streamerName, category });
-            lstHistory.Items.Add(newItem);
-            lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
-
-            // Сохраняем запись в файл, если включено
-            if (SaveLogToFile)
-            {
-                string logEntry = $"{time} - {streamerName}: {category}";
-                File.AppendAllText("history.log", logEntry + Environment.NewLine);
-            }
-        }
-
-        private void ForceAddToHistory(string time, string streamerName, string category)
-        {
-            // Добавляем новую запись в журнал без учета настроек
-            var newItem = new ListViewItem(new[] { time, streamerName, category });
-            lstHistory.Items.Add(newItem);
-            lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
-
-            // Сохраняем запись в файл, если включено
-            if (SaveLogToFile)
-            {
-                string logEntry = $"{time} - {streamerName}: {category}";
-                File.AppendAllText("history.log", logEntry + Environment.NewLine);
-            }
-        }
-
-        private void ShowToastNotification(string title, string message)
-        {
-            if (notificationMode == 0)
-            {
-                return;
-            }
-
-            string soundPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Notif.wav");
-
-            if (!File.Exists(soundPath))
-            {
-                LogError($"Sound file not found: {soundPath}");
-                return;
-            }
-
-            if (notificationMode == 3)
-            {
-                try
-                {
-                    using (var player = new System.Media.SoundPlayer(soundPath))
-                    {
-                        player.Play();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Failed to play sound: {ex.Message}");
-                }
-                return;
-            }
-
-            var toast = new ToastContentBuilder()
-                .AddText(title)
-                .AddText(message);
-
-            if (notificationMode == 2)
-            {
-                toast.AddAudio(new Uri(soundPath), silent: false);
-            }
-            else if (notificationMode == 1)
-            {
-                toast.AddAudio(new Uri("ms-winsoundevent:Notification.Default"), silent: true);
-            }
-
-            toast.Show();
-        }
-
-        private void UpdateTrayIconToolTip()
-        {
-            StringBuilder tooltipText = new StringBuilder(CurrentLanguage == "EN" ? "Current categories:\n" : "Текущие категории:\n");
-            foreach (var streamer in trackedStreamers)
-            {
-                if (streamerCategories.ContainsKey(streamer))
-                {
-                    tooltipText.AppendLine($"{streamer}: {streamerCategories[streamer]}");
-                }
-            }
-
-            string finalText = tooltipText.ToString();
-            if (finalText.Length > 63)
-            {
-                finalText = finalText.Substring(0, 60) + "...";
-            }
-
-            trayIcon.Text = finalText;
-        }
-
-        private string ExtractStreamerName(string input)
-        {
-            if (input.StartsWith("https://www.twitch.tv/"))
-            {
-                return input.Substring("https://www.twitch.tv/".Length).Split('/')[0];
-            }
-            return input;
-        }
-
-        private async Task GetAccessTokenAsync()
-        {
-            if (string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret))
-            {
-                MessageBox.Show(CurrentLanguage == "EN"
-                    ? "Please enter Client ID and Client Secret."
-                    : "Пожалуйста, введите Client ID и Client Secret.");
-                return;
-            }
-
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://id.twitch.tv/oauth2/token");
-            request.Content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("client_id", ClientId),
-                new KeyValuePair<string, string>("client_secret", ClientSecret),
-                new KeyValuePair<string, string>("grant_type", "client_credentials")
-            });
-
-            try
-            {
-                var response = await client.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-
-                var responseData = await response.Content.ReadAsStringAsync();
-                var json = JObject.Parse(responseData);
-
-                if (json["access_token"] != null)
-                {
-                    accessToken = json["access_token"].ToString();
-                }
-                else
-                {
-                    MessageBox.Show(CurrentLanguage == "EN"
-                        ? "Failed to get access token. Check your Client ID and Client Secret."
-                        : "Не удалось получить токен доступа. Проверьте Client ID и Client Secret.");
-                    accessToken = null;
-                }
-            }
-            catch (HttpRequestException ex)
-            {
-                LogError($"HTTP Error: {ex.Message}");
-                accessToken = null;
-            }
-            catch (Exception ex)
-            {
-                LogError($"Error: {ex.Message}");
-                accessToken = null;
-            }
-        }
-
-        private async Task<Dictionary<string, string>> GetStreamersCategoriesAsync(IEnumerable<string> streamerNames)
-        {
-            if (string.IsNullOrEmpty(accessToken))
-            {
-                await GetAccessTokenAsync();
-            }
-
-            var categories = new Dictionary<string, string>();
-            var streamerList = streamerNames.ToList();
-            int batchSize = 100;
-
-            for (int i = 0; i < streamerList.Count; i += batchSize)
-            {
-                var batch = streamerList.Skip(i).Take(batchSize);
-                var batchQuery = string.Join("&user_login=", batch);
-                var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.twitch.tv/helix/streams?user_login={batchQuery}");
-                request.Headers.Add("Client-ID", ClientId);
-                request.Headers.Add("Authorization", $"Bearer {accessToken}");
-
-                try
-                {
-                    var response = await client.SendAsync(request);
-                    response.EnsureSuccessStatusCode();
-
-                    var responseData = await response.Content.ReadAsStringAsync();
-                    var json = JObject.Parse(responseData);
-
-                    var streams = json["data"] as JArray;
-                    if (streams != null)
-                    {
-                        foreach (var stream in streams)
-                        {
-                            var streamerName = stream["user_login"]?.ToString();
-                            var gameName = stream["game_name"]?.ToString();
-                            if (streamerName != null)
-                            {
-                                categories[streamerName] = gameName ?? "No category";
-                            }
-                        }
-                    }
-                }
-                catch (HttpRequestException ex)
-                {
-                    LogError($"HTTP Error: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    LogError($"Error: {ex.Message}");
-                }
-            }
-
-            foreach (var streamer in streamerNames)
-            {
-                if (!categories.ContainsKey(streamer))
-                {
-                    categories[streamer] = "Offline";
-                }
-            }
-
-            return categories;
-        }
-
         private void btnSettings_Click(object sender, EventArgs e)
         {
             using (var settingsForm = new SettingsForm(ClientId, ClientSecret, checkInterval, FilterUnchangedCategories, SaveLogToFile, FilterOfflineStreamers, CurrentLanguage, notificationMode))
@@ -578,15 +573,8 @@ namespace TwitchCategoryTracker
         {
             trackedStreamers.Clear();
             streamerCategories.Clear();
-            streamerOfflineLogged.Clear(); // Очищаем словарь оффлайн-записей
             lstTrackedStreamers.Items.Clear();
             SaveSettings();
-        }
-
-        private void LogError(string errorMessage)
-        {
-            string time = DateTime.Now.ToString("HH:mm:ss");
-            AddToHistory(time, "Error", errorMessage);
         }
 
         private void SaveSettings()
@@ -654,7 +642,7 @@ namespace TwitchCategoryTracker
                 foreach (var streamer in trackedStreamers)
                 {
                     string time = DateTime.Now.ToString("HH:mm:ss");
-                    AddToHistory(time, streamer, categories[streamer]);
+                    AddHistoryEntry(streamer, categories[streamer], true);
 
                     streamerCategories[streamer] = categories[streamer];
                 }
@@ -671,7 +659,7 @@ namespace TwitchCategoryTracker
             {
                 MessageBox.Show(CurrentLanguage == "EN"
                     ? "Please enter a streamer name or URL."
-                    : "Пожалуйста, введите имя стримера или URL.");
+                    : "Пожалуйста, введите имя стримера или ссылку.");
                 return;
             }
 
@@ -709,11 +697,6 @@ namespace TwitchCategoryTracker
                         streamerCategories.Remove(streamerName);
                     }
 
-                    if (streamerOfflineLogged.ContainsKey(streamerName))
-                    {
-                        streamerOfflineLogged.Remove(streamerName);
-                    }
-
                     UpdateStreamersList();
                     SaveSettings();
                 }
@@ -722,16 +705,34 @@ namespace TwitchCategoryTracker
 
         private async void btnCheckAllCategories_Click(object sender, EventArgs e)
         {
-            var categories = await GetStreamersCategoriesAsync(trackedStreamers);
-            if (categories != null)
-            {
-                foreach (var streamer in trackedStreamers)
-                {
-                    string time = DateTime.Now.ToString("HH:mm:ss");
-                    ForceAddToHistory(time, streamer, categories[streamer]);
+            // Сохраняем оригинальные значения настроек
+            bool originalFilterOffline = FilterOfflineStreamers;
+            bool originalFilterUnchanged = FilterUnchangedCategories;
 
-                    streamerCategories[streamer] = categories[streamer];
+            // Временно отключаем фильтрацию
+            FilterOfflineStreamers = false;
+            FilterUnchangedCategories = false;
+
+            try
+            {
+                var categories = await GetStreamersCategoriesAsync(trackedStreamers);
+                if (categories != null)
+                {
+                    foreach (var streamer in trackedStreamers)
+                    {
+                        string time = DateTime.Now.ToString("HH:mm:ss");
+
+                        // Принудительно добавляем запись
+                        AddHistoryEntry(streamer, categories[streamer], false);
+                        streamerCategories[streamer] = categories[streamer];
+                    }
                 }
+            }
+            finally
+            {
+                // Восстанавливаем оригинальные настройки
+                FilterOfflineStreamers = originalFilterOffline;
+                FilterUnchangedCategories = originalFilterUnchanged;
             }
 
             UpdateStreamersList();
@@ -765,18 +766,13 @@ namespace TwitchCategoryTracker
             }
         }
 
-        private void UpdateLanguage()
+        private string ExtractStreamerName(string input)
         {
-            lblStreamerName.Text = CurrentLanguage == "EN" ? "Streamer Name" : "Имя стримера";
-            btnAddStreamer.Text = CurrentLanguage == "EN" ? "Add" : "Добавить";
-            btnRemoveStreamer.Text = CurrentLanguage == "EN" ? "Remove" : "Удалить";
-            btnStartTracking.Text = CurrentLanguage == "EN" ? "Start Tracking" : "Начать отслеживание";
-            btnStopTracking.Text = CurrentLanguage == "EN" ? "Stop Tracking" : "Остановить отслеживание";
-            btnCheckAllCategories.Text = CurrentLanguage == "EN" ? "Check All" : "Проверить всех";
-            btnClearHistory.Text = CurrentLanguage == "EN" ? "Clear History" : "Очистить журнал";
-            btnRemoveAllStreamers.Text = CurrentLanguage == "EN" ? "Remove All Streamers" : "Удалить всех стримеров";
-            btnSettings.Text = CurrentLanguage == "EN" ? "Settings" : "Настройки";
-            lblTrackedStreamers.Text = CurrentLanguage == "EN" ? "Tracked Streamers" : "Отслеживаемые стримеры";
+            if (input.StartsWith("https://www.twitch.tv/"))
+            {
+                return input.Substring("https://www.twitch.tv/".Length).Split('/')[0];
+            }
+            return input;
         }
 
         private void txtStreamerName_TextChanged(object sender, EventArgs e)
@@ -788,6 +784,10 @@ namespace TwitchCategoryTracker
         }
 
         private void lstHistory_SelectedIndexChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
         {
         }
     }

@@ -82,7 +82,7 @@
             // lblClientSecret
             // 
             this.lblClientSecret.AutoSize = true;
-            this.lblClientSecret.Location = new System.Drawing.Point(201, 54);
+            this.lblClientSecret.Location = new System.Drawing.Point(201, 51);
             this.lblClientSecret.Name = "lblClientSecret";
             this.lblClientSecret.Size = new System.Drawing.Size(67, 13);
             this.lblClientSecret.TabIndex = 3;
@@ -90,7 +90,7 @@
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(217, 227);
+            this.btnSave.Location = new System.Drawing.Point(193, 245);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 4;
@@ -100,7 +100,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(298, 227);
+            this.btnCancel.Location = new System.Drawing.Point(279, 245);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 5;
@@ -118,7 +118,7 @@
             // lblInterval
             // 
             this.lblInterval.AutoSize = true;
-            this.lblInterval.Location = new System.Drawing.Point(201, 85);
+            this.lblInterval.Location = new System.Drawing.Point(201, 79);
             this.lblInterval.Name = "lblInterval";
             this.lblInterval.Size = new System.Drawing.Size(91, 13);
             this.lblInterval.TabIndex = 7;
@@ -127,7 +127,7 @@
             // chkFilterUnchangedCategories
             // 
             this.chkFilterUnchangedCategories.AutoSize = true;
-            this.chkFilterUnchangedCategories.Location = new System.Drawing.Point(12, 204);
+            this.chkFilterUnchangedCategories.Location = new System.Drawing.Point(12, 107);
             this.chkFilterUnchangedCategories.Name = "chkFilterUnchangedCategories";
             this.chkFilterUnchangedCategories.Size = new System.Drawing.Size(300, 17);
             this.chkFilterUnchangedCategories.TabIndex = 8;
@@ -137,7 +137,7 @@
             // chkSaveLogToFile
             // 
             this.chkSaveLogToFile.AutoSize = true;
-            this.chkSaveLogToFile.Location = new System.Drawing.Point(12, 227);
+            this.chkSaveLogToFile.Location = new System.Drawing.Point(12, 153);
             this.chkSaveLogToFile.Name = "chkSaveLogToFile";
             this.chkSaveLogToFile.Size = new System.Drawing.Size(119, 17);
             this.chkSaveLogToFile.TabIndex = 9;
@@ -147,16 +147,16 @@
             // chkFilterOfflineStreamers
             // 
             this.chkFilterOfflineStreamers.AutoSize = true;
-            this.chkFilterOfflineStreamers.Location = new System.Drawing.Point(12, 250);
+            this.chkFilterOfflineStreamers.Location = new System.Drawing.Point(12, 130);
             this.chkFilterOfflineStreamers.Name = "chkFilterOfflineStreamers";
-            this.chkFilterOfflineStreamers.Size = new System.Drawing.Size(300, 17);
+            this.chkFilterOfflineStreamers.Size = new System.Drawing.Size(252, 17);
             this.chkFilterOfflineStreamers.TabIndex = 10;
             this.chkFilterOfflineStreamers.Text = "Не добавлять оффлайн стримеров в журнал";
             this.chkFilterOfflineStreamers.UseVisualStyleBackColor = true;
             // 
             // btnTest
             // 
-            this.btnTest.Location = new System.Drawing.Point(298, 54);
+            this.btnTest.Location = new System.Drawing.Point(279, 49);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
             this.btnTest.TabIndex = 11;
@@ -166,7 +166,7 @@
             // 
             // btnEnglish
             // 
-            this.btnEnglish.Location = new System.Drawing.Point(298, 129);
+            this.btnEnglish.Location = new System.Drawing.Point(279, 153);
             this.btnEnglish.Name = "btnEnglish";
             this.btnEnglish.Size = new System.Drawing.Size(75, 23);
             this.btnEnglish.TabIndex = 12;
@@ -176,17 +176,17 @@
             // 
             // btnRussian
             // 
-            this.btnRussian.Location = new System.Drawing.Point(298, 158);
+            this.btnRussian.Location = new System.Drawing.Point(279, 182);
             this.btnRussian.Name = "btnRussian";
             this.btnRussian.Size = new System.Drawing.Size(75, 23);
             this.btnRussian.TabIndex = 13;
-            this.btnRussian.Text = "Russian";
+            this.btnRussian.Text = "Русский";
             this.btnRussian.UseVisualStyleBackColor = true;
             this.btnRussian.Click += new System.EventHandler(this.btnRussian_Click);
             // 
             // btnHelp
             // 
-            this.btnHelp.Location = new System.Drawing.Point(298, 23);
+            this.btnHelp.Location = new System.Drawing.Point(279, 18);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(75, 23);
             this.btnHelp.TabIndex = 14;
@@ -197,7 +197,7 @@
             // rbNotificationsOff
             // 
             this.rbNotificationsOff.AutoSize = true;
-            this.rbNotificationsOff.Location = new System.Drawing.Point(12, 109);
+            this.rbNotificationsOff.Location = new System.Drawing.Point(12, 176);
             this.rbNotificationsOff.Name = "rbNotificationsOff";
             this.rbNotificationsOff.Size = new System.Drawing.Size(103, 17);
             this.rbNotificationsOff.TabIndex = 15;
@@ -208,7 +208,7 @@
             // rbNotificationsNoSound
             // 
             this.rbNotificationsNoSound.AutoSize = true;
-            this.rbNotificationsNoSound.Location = new System.Drawing.Point(12, 132);
+            this.rbNotificationsNoSound.Location = new System.Drawing.Point(12, 199);
             this.rbNotificationsNoSound.Name = "rbNotificationsNoSound";
             this.rbNotificationsNoSound.Size = new System.Drawing.Size(160, 17);
             this.rbNotificationsNoSound.TabIndex = 16;
@@ -219,7 +219,7 @@
             // rbNotificationsWithSound
             // 
             this.rbNotificationsWithSound.AutoSize = true;
-            this.rbNotificationsWithSound.Location = new System.Drawing.Point(12, 158);
+            this.rbNotificationsWithSound.Location = new System.Drawing.Point(12, 222);
             this.rbNotificationsWithSound.Name = "rbNotificationsWithSound";
             this.rbNotificationsWithSound.Size = new System.Drawing.Size(168, 17);
             this.rbNotificationsWithSound.TabIndex = 17;
@@ -230,7 +230,7 @@
             // rbNotificationsSoundOnly
             // 
             this.rbNotificationsSoundOnly.AutoSize = true;
-            this.rbNotificationsSoundOnly.Location = new System.Drawing.Point(12, 181);
+            this.rbNotificationsSoundOnly.Location = new System.Drawing.Point(12, 245);
             this.rbNotificationsSoundOnly.Name = "rbNotificationsSoundOnly";
             this.rbNotificationsSoundOnly.Size = new System.Drawing.Size(144, 17);
             this.rbNotificationsSoundOnly.TabIndex = 18;
@@ -240,7 +240,7 @@
             // 
             // SettingsForm
             // 
-            this.ClientSize = new System.Drawing.Size(396, 329);
+            this.ClientSize = new System.Drawing.Size(368, 281);
             this.Controls.Add(this.rbNotificationsSoundOnly);
             this.Controls.Add(this.rbNotificationsWithSound);
             this.Controls.Add(this.rbNotificationsNoSound);

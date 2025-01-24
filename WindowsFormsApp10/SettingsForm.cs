@@ -19,6 +19,11 @@ namespace TwitchCategoryTracker
         public SettingsForm(string currentClientId, string currentClientSecret, int currentInterval, bool currentFilterUnchangedCategories, bool currentSaveLogToFile, bool currentFilterOfflineStreamers, string currentLanguage, int currentNotificationMode)
         {
             InitializeComponent();
+
+            // Жестко задаем текст кнопок выбора языка
+            btnEnglish.Text = "English";
+            btnRussian.Text = "Русский";
+
             txtClientId.Text = currentClientId;
             txtClientSecret.Text = currentClientSecret;
             txtInterval.Text = currentInterval.ToString();
@@ -148,8 +153,6 @@ namespace TwitchCategoryTracker
             btnSave.Text = CurrentLanguage == "EN" ? "Save" : "Сохранить";
             btnCancel.Text = CurrentLanguage == "EN" ? "Cancel" : "Отмена";
             btnTest.Text = CurrentLanguage == "EN" ? "Test" : "Тест";
-            btnEnglish.Text = CurrentLanguage == "EN" ? "English" : "Английский";
-            btnRussian.Text = CurrentLanguage == "EN" ? "Russian" : "Русский";
             btnHelp.Text = CurrentLanguage == "EN" ? "Help" : "Помощь";
             rbNotificationsOff.Text = CurrentLanguage == "EN" ? "Notifications: Off" : "Уведомления: Выключены";
             rbNotificationsNoSound.Text = CurrentLanguage == "EN" ? "Notifications: On (No Sound)" : "Уведомления: Включены (Без звука)";
