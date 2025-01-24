@@ -24,12 +24,14 @@ namespace TwitchCategoryTracker
         private System.Windows.Forms.Timer trackingTimer;
         private System.Windows.Forms.Timer countdownTimer;
         private Dictionary<string, string> streamerCategories = new Dictionary<string, string>();
+        private Dictionary<string, bool> streamerOfflineLogged = new Dictionary<string, bool>(); // Новый словарь для отслеживания оффлайн-записей
         private NotifyIcon trayIcon;
         private ContextMenuStrip trayMenu;
         private int notificationMode = 2;
         private int remainingTime;
         private bool FilterUnchangedCategories { get; set; } = false;
         private bool SaveLogToFile { get; set; } = false;
+        private bool FilterOfflineStreamers { get; set; } = false;
         public string CurrentLanguage { get; set; } = "EN";
 
         public Form1()
@@ -259,21 +261,49 @@ namespace TwitchCategoryTracker
                 string time = DateTime.Now.ToString("HH:mm:ss");
                 AddToHistory(time, streamerName, newCategory);
             }
+        }
 
-            if (newCategory == "Offline" && streamerCategories[streamerName] != "Offline")
+        private void RemoveOfflineEntriesFromHistory(string streamerName)
+        {
+            for (int i = lstHistory.Items.Count - 1; i >= 0; i--)
             {
-                string time = DateTime.Now.ToString("HH:mm:ss");
-                AddToHistory(time, streamerName, "Offline");
-                streamerCategories[streamerName] = "Offline";
+                var item = lstHistory.Items[i];
+                if (item.SubItems[1].Text == streamerName && item.SubItems[2].Text == "Offline")
+                {
+                    lstHistory.Items.RemoveAt(i);
+                }
             }
         }
 
         private void AddToHistory(string time, string streamerName, string category)
         {
-            var item = new ListViewItem(new[] { time, streamerName, category });
-            lstHistory.Items.Add(item);
+            // Если включена настройка "не добавлять оффлайн стримеров в журнал" и категория "Offline", пропускаем добавление
+            if (FilterOfflineStreamers && category == "Offline")
+            {
+                return;
+            }
+
+            // Добавляем новую запись в журнал
+            var newItem = new ListViewItem(new[] { time, streamerName, category });
+            lstHistory.Items.Add(newItem);
             lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
 
+            // Сохраняем запись в файл, если включено
+            if (SaveLogToFile)
+            {
+                string logEntry = $"{time} - {streamerName}: {category}";
+                File.AppendAllText("history.log", logEntry + Environment.NewLine);
+            }
+        }
+
+        private void ForceAddToHistory(string time, string streamerName, string category)
+        {
+            // Добавляем новую запись в журнал без учета настроек
+            var newItem = new ListViewItem(new[] { time, streamerName, category });
+            lstHistory.Items.Add(newItem);
+            lstHistory.EnsureVisible(lstHistory.Items.Count - 1);
+
+            // Сохраняем запись в файл, если включено
             if (SaveLogToFile)
             {
                 string logEntry = $"{time} - {streamerName}: {category}";
@@ -471,7 +501,7 @@ namespace TwitchCategoryTracker
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
-            using (var settingsForm = new SettingsForm(ClientId, ClientSecret, checkInterval, FilterUnchangedCategories, SaveLogToFile, CurrentLanguage, notificationMode))
+            using (var settingsForm = new SettingsForm(ClientId, ClientSecret, checkInterval, FilterUnchangedCategories, SaveLogToFile, FilterOfflineStreamers, CurrentLanguage, notificationMode))
             {
                 if (settingsForm.ShowDialog() == DialogResult.OK)
                 {
@@ -480,6 +510,7 @@ namespace TwitchCategoryTracker
                     checkInterval = settingsForm.CheckInterval;
                     FilterUnchangedCategories = settingsForm.FilterUnchangedCategories;
                     SaveLogToFile = settingsForm.SaveLogToFile;
+                    FilterOfflineStreamers = settingsForm.FilterOfflineStreamers;
                     CurrentLanguage = settingsForm.CurrentLanguage;
                     notificationMode = settingsForm.NotificationMode;
 
@@ -547,6 +578,7 @@ namespace TwitchCategoryTracker
         {
             trackedStreamers.Clear();
             streamerCategories.Clear();
+            streamerOfflineLogged.Clear(); // Очищаем словарь оффлайн-записей
             lstTrackedStreamers.Items.Clear();
             SaveSettings();
         }
@@ -566,6 +598,7 @@ namespace TwitchCategoryTracker
             iniFile.SetValue("General", "CheckInterval", checkInterval.ToString());
             iniFile.SetValue("General", "FilterUnchangedCategories", FilterUnchangedCategories.ToString());
             iniFile.SetValue("General", "SaveLogToFile", SaveLogToFile.ToString());
+            iniFile.SetValue("General", "FilterOfflineStreamers", FilterOfflineStreamers.ToString());
             iniFile.SetValue("General", "CurrentLanguage", CurrentLanguage);
             iniFile.SetValue("General", "NotificationMode", notificationMode.ToString());
 
@@ -591,6 +624,7 @@ namespace TwitchCategoryTracker
             }
             FilterUnchangedCategories = bool.Parse(iniFile.GetValue("General", "FilterUnchangedCategories", "false"));
             SaveLogToFile = bool.Parse(iniFile.GetValue("General", "SaveLogToFile", "false"));
+            FilterOfflineStreamers = bool.Parse(iniFile.GetValue("General", "FilterOfflineStreamers", "false"));
             CurrentLanguage = iniFile.GetValue("General", "CurrentLanguage", "EN");
             if (int.TryParse(iniFile.GetValue("General", "NotificationMode"), out int mode))
             {
@@ -675,6 +709,11 @@ namespace TwitchCategoryTracker
                         streamerCategories.Remove(streamerName);
                     }
 
+                    if (streamerOfflineLogged.ContainsKey(streamerName))
+                    {
+                        streamerOfflineLogged.Remove(streamerName);
+                    }
+
                     UpdateStreamersList();
                     SaveSettings();
                 }
@@ -689,7 +728,7 @@ namespace TwitchCategoryTracker
                 foreach (var streamer in trackedStreamers)
                 {
                     string time = DateTime.Now.ToString("HH:mm:ss");
-                    AddToHistory(time, streamer, categories[streamer]);
+                    ForceAddToHistory(time, streamer, categories[streamer]);
 
                     streamerCategories[streamer] = categories[streamer];
                 }

@@ -12,10 +12,11 @@ namespace TwitchCategoryTracker
         public int CheckInterval { get; private set; }
         public bool FilterUnchangedCategories { get; private set; }
         public bool SaveLogToFile { get; private set; }
+        public bool FilterOfflineStreamers { get; private set; }
         public string CurrentLanguage { get; private set; }
         public int NotificationMode { get; private set; }
 
-        public SettingsForm(string currentClientId, string currentClientSecret, int currentInterval, bool currentFilterUnchangedCategories, bool currentSaveLogToFile, string currentLanguage, int currentNotificationMode)
+        public SettingsForm(string currentClientId, string currentClientSecret, int currentInterval, bool currentFilterUnchangedCategories, bool currentSaveLogToFile, bool currentFilterOfflineStreamers, string currentLanguage, int currentNotificationMode)
         {
             InitializeComponent();
             txtClientId.Text = currentClientId;
@@ -23,6 +24,7 @@ namespace TwitchCategoryTracker
             txtInterval.Text = currentInterval.ToString();
             chkFilterUnchangedCategories.Checked = currentFilterUnchangedCategories;
             chkSaveLogToFile.Checked = currentSaveLogToFile;
+            chkFilterOfflineStreamers.Checked = currentFilterOfflineStreamers;
             CurrentLanguage = currentLanguage;
             NotificationMode = currentNotificationMode;
             UpdateLanguage();
@@ -45,6 +47,7 @@ namespace TwitchCategoryTracker
             CheckInterval = interval;
             FilterUnchangedCategories = chkFilterUnchangedCategories.Checked;
             SaveLogToFile = chkSaveLogToFile.Checked;
+            FilterOfflineStreamers = chkFilterOfflineStreamers.Checked;
 
             if (rbNotificationsOff.Checked)
             {
@@ -139,6 +142,9 @@ namespace TwitchCategoryTracker
             chkSaveLogToFile.Text = CurrentLanguage == "EN"
                 ? "Save log to file"
                 : "Сохранять журнал";
+            chkFilterOfflineStreamers.Text = CurrentLanguage == "EN"
+                ? "Do not add offline streamers to the log"
+                : "Не добавлять оффлайн стримеров в журнал";
             btnSave.Text = CurrentLanguage == "EN" ? "Save" : "Сохранить";
             btnCancel.Text = CurrentLanguage == "EN" ? "Cancel" : "Отмена";
             btnTest.Text = CurrentLanguage == "EN" ? "Test" : "Тест";

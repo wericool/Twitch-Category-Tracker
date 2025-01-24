@@ -13,6 +13,7 @@
         private System.Windows.Forms.Label lblInterval;
         private System.Windows.Forms.CheckBox chkFilterUnchangedCategories;
         private System.Windows.Forms.CheckBox chkSaveLogToFile;
+        private System.Windows.Forms.CheckBox chkFilterOfflineStreamers;
         private System.Windows.Forms.Button btnTest;
         private System.Windows.Forms.Button btnEnglish;
         private System.Windows.Forms.Button btnRussian;
@@ -43,6 +44,7 @@
             this.lblInterval = new System.Windows.Forms.Label();
             this.chkFilterUnchangedCategories = new System.Windows.Forms.CheckBox();
             this.chkSaveLogToFile = new System.Windows.Forms.CheckBox();
+            this.chkFilterOfflineStreamers = new System.Windows.Forms.CheckBox();
             this.btnTest = new System.Windows.Forms.Button();
             this.btnEnglish = new System.Windows.Forms.Button();
             this.btnRussian = new System.Windows.Forms.Button();
@@ -142,12 +144,22 @@
             this.chkSaveLogToFile.Text = "Сохранять журнал";
             this.chkSaveLogToFile.UseVisualStyleBackColor = true;
             // 
+            // chkFilterOfflineStreamers
+            // 
+            this.chkFilterOfflineStreamers.AutoSize = true;
+            this.chkFilterOfflineStreamers.Location = new System.Drawing.Point(12, 250);
+            this.chkFilterOfflineStreamers.Name = "chkFilterOfflineStreamers";
+            this.chkFilterOfflineStreamers.Size = new System.Drawing.Size(300, 17);
+            this.chkFilterOfflineStreamers.TabIndex = 10;
+            this.chkFilterOfflineStreamers.Text = "Не добавлять оффлайн стримеров в журнал";
+            this.chkFilterOfflineStreamers.UseVisualStyleBackColor = true;
+            // 
             // btnTest
             // 
             this.btnTest.Location = new System.Drawing.Point(298, 54);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
-            this.btnTest.TabIndex = 10;
+            this.btnTest.TabIndex = 11;
             this.btnTest.Text = "Test";
             this.btnTest.UseVisualStyleBackColor = true;
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
@@ -157,7 +169,7 @@
             this.btnEnglish.Location = new System.Drawing.Point(298, 129);
             this.btnEnglish.Name = "btnEnglish";
             this.btnEnglish.Size = new System.Drawing.Size(75, 23);
-            this.btnEnglish.TabIndex = 11;
+            this.btnEnglish.TabIndex = 12;
             this.btnEnglish.Text = "English";
             this.btnEnglish.UseVisualStyleBackColor = true;
             this.btnEnglish.Click += new System.EventHandler(this.btnEnglish_Click);
@@ -167,7 +179,7 @@
             this.btnRussian.Location = new System.Drawing.Point(298, 158);
             this.btnRussian.Name = "btnRussian";
             this.btnRussian.Size = new System.Drawing.Size(75, 23);
-            this.btnRussian.TabIndex = 12;
+            this.btnRussian.TabIndex = 13;
             this.btnRussian.Text = "Russian";
             this.btnRussian.UseVisualStyleBackColor = true;
             this.btnRussian.Click += new System.EventHandler(this.btnRussian_Click);
@@ -177,7 +189,7 @@
             this.btnHelp.Location = new System.Drawing.Point(298, 23);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(75, 23);
-            this.btnHelp.TabIndex = 13;
+            this.btnHelp.TabIndex = 14;
             this.btnHelp.Text = "Help";
             this.btnHelp.UseVisualStyleBackColor = true;
             this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
@@ -188,7 +200,7 @@
             this.rbNotificationsOff.Location = new System.Drawing.Point(12, 109);
             this.rbNotificationsOff.Name = "rbNotificationsOff";
             this.rbNotificationsOff.Size = new System.Drawing.Size(103, 17);
-            this.rbNotificationsOff.TabIndex = 14;
+            this.rbNotificationsOff.TabIndex = 15;
             this.rbNotificationsOff.TabStop = true;
             this.rbNotificationsOff.Text = "Notifications: Off";
             this.rbNotificationsOff.UseVisualStyleBackColor = true;
@@ -199,7 +211,7 @@
             this.rbNotificationsNoSound.Location = new System.Drawing.Point(12, 132);
             this.rbNotificationsNoSound.Name = "rbNotificationsNoSound";
             this.rbNotificationsNoSound.Size = new System.Drawing.Size(160, 17);
-            this.rbNotificationsNoSound.TabIndex = 15;
+            this.rbNotificationsNoSound.TabIndex = 16;
             this.rbNotificationsNoSound.TabStop = true;
             this.rbNotificationsNoSound.Text = "Notifications: On (No Sound)";
             this.rbNotificationsNoSound.UseVisualStyleBackColor = true;
@@ -210,7 +222,7 @@
             this.rbNotificationsWithSound.Location = new System.Drawing.Point(12, 158);
             this.rbNotificationsWithSound.Name = "rbNotificationsWithSound";
             this.rbNotificationsWithSound.Size = new System.Drawing.Size(168, 17);
-            this.rbNotificationsWithSound.TabIndex = 16;
+            this.rbNotificationsWithSound.TabIndex = 17;
             this.rbNotificationsWithSound.TabStop = true;
             this.rbNotificationsWithSound.Text = "Notifications: On (With Sound)";
             this.rbNotificationsWithSound.UseVisualStyleBackColor = true;
@@ -221,7 +233,7 @@
             this.rbNotificationsSoundOnly.Location = new System.Drawing.Point(12, 181);
             this.rbNotificationsSoundOnly.Name = "rbNotificationsSoundOnly";
             this.rbNotificationsSoundOnly.Size = new System.Drawing.Size(144, 17);
-            this.rbNotificationsSoundOnly.TabIndex = 17;
+            this.rbNotificationsSoundOnly.TabIndex = 18;
             this.rbNotificationsSoundOnly.TabStop = true;
             this.rbNotificationsSoundOnly.Text = "Notifications: Sound Only";
             this.rbNotificationsSoundOnly.UseVisualStyleBackColor = true;
@@ -237,6 +249,7 @@
             this.Controls.Add(this.btnRussian);
             this.Controls.Add(this.btnEnglish);
             this.Controls.Add(this.btnTest);
+            this.Controls.Add(this.chkFilterOfflineStreamers);
             this.Controls.Add(this.chkSaveLogToFile);
             this.Controls.Add(this.chkFilterUnchangedCategories);
             this.Controls.Add(this.lblInterval);
@@ -252,7 +265,6 @@
             this.Text = "Settings";
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
     }
 }
