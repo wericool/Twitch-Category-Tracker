@@ -154,9 +154,9 @@ namespace TwitchCategoryTracker
             btnCancel.Text = CurrentLanguage == "EN" ? "Cancel" : "Отмена";
             btnTest.Text = CurrentLanguage == "EN" ? "Test" : "Тест";
             btnHelp.Text = CurrentLanguage == "EN" ? "Help" : "Помощь";
-            rbNotificationsOff.Text = CurrentLanguage == "EN" ? "Notifications: Off" : "Уведомления: Выключены";
-            rbNotificationsNoSound.Text = CurrentLanguage == "EN" ? "Notifications: On (No Sound)" : "Уведомления: Включены (Без звука)";
-            rbNotificationsWithSound.Text = CurrentLanguage == "EN" ? "Notifications: On (With Sound)" : "Уведомления: Включены (Со звуком)";
+            rbNotificationsOff.Text = CurrentLanguage == "EN" ? "Notifications: Off" : "Уведомления: Выкл.";
+            rbNotificationsNoSound.Text = CurrentLanguage == "EN" ? "Notifications: On (No Sound)" : "Уведомления: Вкл. (Без звука)";
+            rbNotificationsWithSound.Text = CurrentLanguage == "EN" ? "Notifications: On (With Sound)" : "Уведомления: Вкл. (Со звуком)";
             rbNotificationsSoundOnly.Text = CurrentLanguage == "EN" ? "Notifications: Sound Only" : "Уведомления: Только звук";
             lblAbout.Text = CurrentLanguage == "EN"
                 ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015"
@@ -191,6 +191,16 @@ namespace TwitchCategoryTracker
         {
             // Открываем ссылку в браузере
             System.Diagnostics.Process.Start("https://taplink.cc/ericool");
+        }
+
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void rbNotificationsOff_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
