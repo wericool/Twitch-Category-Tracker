@@ -22,6 +22,8 @@
         private System.Windows.Forms.RadioButton rbNotificationsNoSound;
         private System.Windows.Forms.RadioButton rbNotificationsWithSound;
         private System.Windows.Forms.RadioButton rbNotificationsSoundOnly;
+        private System.Windows.Forms.Label lblAbout; // Новый Label
+        private System.Windows.Forms.LinkLabel linkLabel; // Новый LinkLabel
 
         protected override void Dispose(bool disposing)
         {
@@ -53,6 +55,8 @@
             this.rbNotificationsNoSound = new System.Windows.Forms.RadioButton();
             this.rbNotificationsWithSound = new System.Windows.Forms.RadioButton();
             this.rbNotificationsSoundOnly = new System.Windows.Forms.RadioButton();
+            this.lblAbout = new System.Windows.Forms.Label();
+            this.linkLabel = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // txtClientId
@@ -90,7 +94,7 @@
             // 
             // btnSave
             // 
-            this.btnSave.Location = new System.Drawing.Point(193, 245);
+            this.btnSave.Location = new System.Drawing.Point(217, 304);
             this.btnSave.Name = "btnSave";
             this.btnSave.Size = new System.Drawing.Size(75, 23);
             this.btnSave.TabIndex = 4;
@@ -100,7 +104,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(279, 245);
+            this.btnCancel.Location = new System.Drawing.Point(309, 304);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 5;
@@ -127,7 +131,7 @@
             // chkFilterUnchangedCategories
             // 
             this.chkFilterUnchangedCategories.AutoSize = true;
-            this.chkFilterUnchangedCategories.Location = new System.Drawing.Point(12, 107);
+            this.chkFilterUnchangedCategories.Location = new System.Drawing.Point(12, 136);
             this.chkFilterUnchangedCategories.Name = "chkFilterUnchangedCategories";
             this.chkFilterUnchangedCategories.Size = new System.Drawing.Size(300, 17);
             this.chkFilterUnchangedCategories.TabIndex = 8;
@@ -137,7 +141,7 @@
             // chkSaveLogToFile
             // 
             this.chkSaveLogToFile.AutoSize = true;
-            this.chkSaveLogToFile.Location = new System.Drawing.Point(12, 153);
+            this.chkSaveLogToFile.Location = new System.Drawing.Point(12, 113);
             this.chkSaveLogToFile.Name = "chkSaveLogToFile";
             this.chkSaveLogToFile.Size = new System.Drawing.Size(119, 17);
             this.chkSaveLogToFile.TabIndex = 9;
@@ -147,7 +151,7 @@
             // chkFilterOfflineStreamers
             // 
             this.chkFilterOfflineStreamers.AutoSize = true;
-            this.chkFilterOfflineStreamers.Location = new System.Drawing.Point(12, 130);
+            this.chkFilterOfflineStreamers.Location = new System.Drawing.Point(12, 159);
             this.chkFilterOfflineStreamers.Name = "chkFilterOfflineStreamers";
             this.chkFilterOfflineStreamers.Size = new System.Drawing.Size(252, 17);
             this.chkFilterOfflineStreamers.TabIndex = 10;
@@ -156,7 +160,7 @@
             // 
             // btnTest
             // 
-            this.btnTest.Location = new System.Drawing.Point(279, 49);
+            this.btnTest.Location = new System.Drawing.Point(309, 49);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
             this.btnTest.TabIndex = 11;
@@ -166,7 +170,7 @@
             // 
             // btnEnglish
             // 
-            this.btnEnglish.Location = new System.Drawing.Point(279, 153);
+            this.btnEnglish.Location = new System.Drawing.Point(217, 107);
             this.btnEnglish.Name = "btnEnglish";
             this.btnEnglish.Size = new System.Drawing.Size(75, 23);
             this.btnEnglish.TabIndex = 12;
@@ -176,7 +180,7 @@
             // 
             // btnRussian
             // 
-            this.btnRussian.Location = new System.Drawing.Point(279, 182);
+            this.btnRussian.Location = new System.Drawing.Point(309, 107);
             this.btnRussian.Name = "btnRussian";
             this.btnRussian.Size = new System.Drawing.Size(75, 23);
             this.btnRussian.TabIndex = 13;
@@ -186,7 +190,7 @@
             // 
             // btnHelp
             // 
-            this.btnHelp.Location = new System.Drawing.Point(279, 18);
+            this.btnHelp.Location = new System.Drawing.Point(309, 18);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(75, 23);
             this.btnHelp.TabIndex = 14;
@@ -197,7 +201,7 @@
             // rbNotificationsOff
             // 
             this.rbNotificationsOff.AutoSize = true;
-            this.rbNotificationsOff.Location = new System.Drawing.Point(12, 176);
+            this.rbNotificationsOff.Location = new System.Drawing.Point(12, 211);
             this.rbNotificationsOff.Name = "rbNotificationsOff";
             this.rbNotificationsOff.Size = new System.Drawing.Size(103, 17);
             this.rbNotificationsOff.TabIndex = 15;
@@ -208,7 +212,7 @@
             // rbNotificationsNoSound
             // 
             this.rbNotificationsNoSound.AutoSize = true;
-            this.rbNotificationsNoSound.Location = new System.Drawing.Point(12, 199);
+            this.rbNotificationsNoSound.Location = new System.Drawing.Point(204, 211);
             this.rbNotificationsNoSound.Name = "rbNotificationsNoSound";
             this.rbNotificationsNoSound.Size = new System.Drawing.Size(160, 17);
             this.rbNotificationsNoSound.TabIndex = 16;
@@ -219,7 +223,7 @@
             // rbNotificationsWithSound
             // 
             this.rbNotificationsWithSound.AutoSize = true;
-            this.rbNotificationsWithSound.Location = new System.Drawing.Point(12, 222);
+            this.rbNotificationsWithSound.Location = new System.Drawing.Point(204, 188);
             this.rbNotificationsWithSound.Name = "rbNotificationsWithSound";
             this.rbNotificationsWithSound.Size = new System.Drawing.Size(168, 17);
             this.rbNotificationsWithSound.TabIndex = 17;
@@ -230,7 +234,7 @@
             // rbNotificationsSoundOnly
             // 
             this.rbNotificationsSoundOnly.AutoSize = true;
-            this.rbNotificationsSoundOnly.Location = new System.Drawing.Point(12, 245);
+            this.rbNotificationsSoundOnly.Location = new System.Drawing.Point(12, 188);
             this.rbNotificationsSoundOnly.Name = "rbNotificationsSoundOnly";
             this.rbNotificationsSoundOnly.Size = new System.Drawing.Size(144, 17);
             this.rbNotificationsSoundOnly.TabIndex = 18;
@@ -238,9 +242,31 @@
             this.rbNotificationsSoundOnly.Text = "Notifications: Sound Only";
             this.rbNotificationsSoundOnly.UseVisualStyleBackColor = true;
             // 
+            // lblAbout
+            // 
+            this.lblAbout.AutoSize = true;
+            this.lblAbout.Location = new System.Drawing.Point(13, 275);
+            this.lblAbout.Name = "lblAbout";
+            this.lblAbout.Size = new System.Drawing.Size(182, 39);
+            this.lblAbout.TabIndex = 19;
+            this.lblAbout.Text = "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015";
+            // 
+            // linkLabel
+            // 
+            this.linkLabel.AutoSize = true;
+            this.linkLabel.Location = new System.Drawing.Point(13, 314);
+            this.linkLabel.Name = "linkLabel";
+            this.linkLabel.Size = new System.Drawing.Size(125, 13);
+            this.linkLabel.TabIndex = 20;
+            this.linkLabel.TabStop = true;
+            this.linkLabel.Text = "https://taplink.cc/ericool";
+            this.linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel_LinkClicked);
+            // 
             // SettingsForm
             // 
-            this.ClientSize = new System.Drawing.Size(368, 281);
+            this.ClientSize = new System.Drawing.Size(559, 528);
+            this.Controls.Add(this.linkLabel);
+            this.Controls.Add(this.lblAbout);
             this.Controls.Add(this.rbNotificationsSoundOnly);
             this.Controls.Add(this.rbNotificationsWithSound);
             this.Controls.Add(this.rbNotificationsNoSound);
@@ -265,6 +291,7 @@
             this.Text = "Settings";
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
     }
 }

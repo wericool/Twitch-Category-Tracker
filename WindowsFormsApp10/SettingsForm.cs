@@ -158,6 +158,9 @@ namespace TwitchCategoryTracker
             rbNotificationsNoSound.Text = CurrentLanguage == "EN" ? "Notifications: On (No Sound)" : "Уведомления: Включены (Без звука)";
             rbNotificationsWithSound.Text = CurrentLanguage == "EN" ? "Notifications: On (With Sound)" : "Уведомления: Включены (Со звуком)";
             rbNotificationsSoundOnly.Text = CurrentLanguage == "EN" ? "Notifications: Sound Only" : "Уведомления: Только звук";
+            lblAbout.Text = CurrentLanguage == "EN"
+                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015"
+                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2015";
         }
 
         private void UpdateNotificationMode()
@@ -181,6 +184,13 @@ namespace TwitchCategoryTracker
 
         private void lblClientId_Click(object sender, EventArgs e)
         {
+            // Пустой обработчик, если не используется
+        }
+
+        private void linkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            // Открываем ссылку в браузере
+            System.Diagnostics.Process.Start("https://taplink.cc/ericool");
         }
     }
 }

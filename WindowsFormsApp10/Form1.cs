@@ -184,6 +184,33 @@ namespace TwitchCategoryTracker
             AddHistoryEntry("Error", errorMessage, true);
         }
 
+        private void lstTrackedStreamers_DoubleClick(object sender, EventArgs e)
+        {
+            // Проверяем, выбран ли элемент в списке
+            if (lstTrackedStreamers.SelectedItem != null)
+            {
+                // Получаем имя стримера из выбранного элемента
+                string selectedItem = lstTrackedStreamers.SelectedItem.ToString();
+                string streamerName = selectedItem
+                    .Replace("[LIVE]", "")
+                    .Replace("[OFFLINE]", "")
+                    .Trim();
+
+                // Формируем ссылку на канал стримера
+                string twitchUrl = $"https://www.twitch.tv/{streamerName}";
+
+                // Открываем ссылку в браузере
+                try
+                {
+                    System.Diagnostics.Process.Start(twitchUrl);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to open Twitch channel: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
         private async Task<Dictionary<string, string>> GetStreamersCategoriesAsync(IEnumerable<string> streamerNames)
         {
             if (string.IsNullOrEmpty(accessToken))
