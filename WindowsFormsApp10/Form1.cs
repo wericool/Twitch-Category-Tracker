@@ -402,7 +402,7 @@ namespace TwitchCategoryTracker
         private void InitializeTrayIcon()
         {
             trayIcon = new NotifyIcon();
-            trayIcon.Icon = SystemIcons.Application;
+            trayIcon.Icon = this.Icon;
             trayIcon.Text = "Twitch Category Tracker";
             trayIcon.Visible = false;
 

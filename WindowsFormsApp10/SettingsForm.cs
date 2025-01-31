@@ -159,8 +159,8 @@ namespace TwitchCategoryTracker
             rbNotificationsWithSound.Text = CurrentLanguage == "EN" ? "Notifications: On (With Sound)" : "Уведомления: Вкл. (Со звуком)";
             rbNotificationsSoundOnly.Text = CurrentLanguage == "EN" ? "Notifications: Sound Only" : "Уведомления: Только звук";
             lblAbout.Text = CurrentLanguage == "EN"
-                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015"
-                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2015";
+                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2025 v1.0"
+                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2025 v1.0";
         }
 
         private void UpdateNotificationMode()

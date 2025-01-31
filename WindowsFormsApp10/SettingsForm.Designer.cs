@@ -254,7 +254,7 @@
             this.lblAbout.Name = "lblAbout";
             this.lblAbout.Size = new System.Drawing.Size(182, 39);
             this.lblAbout.TabIndex = 19;
-            this.lblAbout.Text = "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015";
+            this.lblAbout.Text = "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2025 v1.0";
             // 
             // linkLabel
             // 
@@ -293,6 +293,7 @@
             this.Controls.Add(this.txtClientId);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "SettingsForm";
+            this.ShowIcon = false;
             this.Text = "Settings";
             this.Load += new System.EventHandler(this.SettingsForm_Load);
             this.ResumeLayout(false);
