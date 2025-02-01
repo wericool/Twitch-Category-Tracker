@@ -139,8 +139,8 @@ namespace TwitchCategoryTracker
             btnTest.Text = CurrentLanguage == "EN" ? "Test" : "Тест";
             btnHelp.Text = CurrentLanguage == "EN" ? "Help" : "Помощь";
             lblAbout.Text = CurrentLanguage == "EN"
-                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015"
-                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2015";
+                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2025"
+                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2025";
         }
 
         private void lblClientId_Click(object sender, EventArgs e)

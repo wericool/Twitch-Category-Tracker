@@ -53,6 +53,7 @@
             this.txtStreamerName.Size = new System.Drawing.Size(211, 20);
             this.txtStreamerName.TabIndex = 0;
             this.txtStreamerName.TextChanged += new System.EventHandler(this.txtStreamerName_TextChanged);
+            this.lstTrackedStreamers.DoubleClick += new System.EventHandler(this.lstTrackedStreamers_DoubleClick);
             // 
             // lblCategory
             // 
@@ -132,7 +133,6 @@
             this.lstTrackedStreamers.Name = "lstTrackedStreamers";
             this.lstTrackedStreamers.Size = new System.Drawing.Size(309, 95);
             this.lstTrackedStreamers.TabIndex = 18;
-            this.lstTrackedStreamers.DoubleClick += new System.EventHandler(this.lstTrackedStreamers_DoubleClick);
             // 
             // btnClearHistory
             // 
@@ -202,7 +202,6 @@
             this.Controls.Add(this.txtStreamerName);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "Form1";
-            this.ShowIcon = false;
             this.Text = "Twitch Category Tracker";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
