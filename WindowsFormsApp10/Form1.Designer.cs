@@ -29,7 +29,6 @@
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.txtStreamerName = new System.Windows.Forms.TextBox();
             this.lblCategory = new System.Windows.Forms.Label();
             this.btnStartTracking = new System.Windows.Forms.Button();
@@ -202,8 +201,8 @@
             this.Controls.Add(this.lblCategory);
             this.Controls.Add(this.txtStreamerName);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
+            this.ShowIcon = false;
             this.Text = "Twitch Category Tracker";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);

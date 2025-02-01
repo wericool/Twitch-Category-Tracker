@@ -13,17 +13,14 @@
         private System.Windows.Forms.Label lblInterval;
         private System.Windows.Forms.CheckBox chkFilterUnchangedCategories;
         private System.Windows.Forms.CheckBox chkSaveLogToFile;
-        private System.Windows.Forms.CheckBox chkFilterOfflineStreamers;
+        private System.Windows.Forms.CheckBox chkShowPopupNotifications;
+        private System.Windows.Forms.CheckBox chkPlaySoundNotifications;
         private System.Windows.Forms.Button btnTest;
         private System.Windows.Forms.Button btnEnglish;
         private System.Windows.Forms.Button btnRussian;
         private System.Windows.Forms.Button btnHelp;
-        private System.Windows.Forms.RadioButton rbNotificationsOff;
-        private System.Windows.Forms.RadioButton rbNotificationsNoSound;
-        private System.Windows.Forms.RadioButton rbNotificationsWithSound;
-        private System.Windows.Forms.RadioButton rbNotificationsSoundOnly;
-        private System.Windows.Forms.Label lblAbout; // Новый Label
-        private System.Windows.Forms.LinkLabel linkLabel; // Новый LinkLabel
+        private System.Windows.Forms.Label lblAbout;
+        private System.Windows.Forms.LinkLabel linkLabel;
 
         protected override void Dispose(bool disposing)
         {
@@ -46,15 +43,12 @@
             this.lblInterval = new System.Windows.Forms.Label();
             this.chkFilterUnchangedCategories = new System.Windows.Forms.CheckBox();
             this.chkSaveLogToFile = new System.Windows.Forms.CheckBox();
-            this.chkFilterOfflineStreamers = new System.Windows.Forms.CheckBox();
+            this.chkShowPopupNotifications = new System.Windows.Forms.CheckBox();
+            this.chkPlaySoundNotifications = new System.Windows.Forms.CheckBox();
             this.btnTest = new System.Windows.Forms.Button();
             this.btnEnglish = new System.Windows.Forms.Button();
             this.btnRussian = new System.Windows.Forms.Button();
             this.btnHelp = new System.Windows.Forms.Button();
-            this.rbNotificationsOff = new System.Windows.Forms.RadioButton();
-            this.rbNotificationsNoSound = new System.Windows.Forms.RadioButton();
-            this.rbNotificationsWithSound = new System.Windows.Forms.RadioButton();
-            this.rbNotificationsSoundOnly = new System.Windows.Forms.RadioButton();
             this.lblAbout = new System.Windows.Forms.Label();
             this.linkLabel = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
@@ -152,22 +146,32 @@
             this.chkSaveLogToFile.Text = "Сохранять журнал";
             this.chkSaveLogToFile.UseVisualStyleBackColor = true;
             // 
-            // chkFilterOfflineStreamers
+            // chkShowPopupNotifications
             // 
-            this.chkFilterOfflineStreamers.AutoSize = true;
-            this.chkFilterOfflineStreamers.Location = new System.Drawing.Point(3, 136);
-            this.chkFilterOfflineStreamers.Name = "chkFilterOfflineStreamers";
-            this.chkFilterOfflineStreamers.Size = new System.Drawing.Size(252, 17);
-            this.chkFilterOfflineStreamers.TabIndex = 10;
-            this.chkFilterOfflineStreamers.Text = "Не добавлять оффлайн стримеров в журнал";
-            this.chkFilterOfflineStreamers.UseVisualStyleBackColor = true;
+            this.chkShowPopupNotifications.AutoSize = true;
+            this.chkShowPopupNotifications.Location = new System.Drawing.Point(3, 136);
+            this.chkShowPopupNotifications.Name = "chkShowPopupNotifications";
+            this.chkShowPopupNotifications.Size = new System.Drawing.Size(235, 17);
+            this.chkShowPopupNotifications.TabIndex = 10;
+            this.chkShowPopupNotifications.Text = "Показывать всплывающие уведомления";
+            this.chkShowPopupNotifications.UseVisualStyleBackColor = true;
+            // 
+            // chkPlaySoundNotifications
+            // 
+            this.chkPlaySoundNotifications.AutoSize = true;
+            this.chkPlaySoundNotifications.Location = new System.Drawing.Point(3, 156);
+            this.chkPlaySoundNotifications.Name = "chkPlaySoundNotifications";
+            this.chkPlaySoundNotifications.Size = new System.Drawing.Size(216, 17);
+            this.chkPlaySoundNotifications.TabIndex = 11;
+            this.chkPlaySoundNotifications.Text = "Проигрывать звуковые уведомления";
+            this.chkPlaySoundNotifications.UseVisualStyleBackColor = true;
             // 
             // btnTest
             // 
             this.btnTest.Location = new System.Drawing.Point(286, 38);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
-            this.btnTest.TabIndex = 11;
+            this.btnTest.TabIndex = 12;
             this.btnTest.Text = "Test";
             this.btnTest.UseVisualStyleBackColor = true;
             this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
@@ -177,7 +181,7 @@
             this.btnEnglish.Location = new System.Drawing.Point(205, 211);
             this.btnEnglish.Name = "btnEnglish";
             this.btnEnglish.Size = new System.Drawing.Size(75, 23);
-            this.btnEnglish.TabIndex = 12;
+            this.btnEnglish.TabIndex = 13;
             this.btnEnglish.Text = "English";
             this.btnEnglish.UseVisualStyleBackColor = true;
             this.btnEnglish.Click += new System.EventHandler(this.btnEnglish_Click);
@@ -187,7 +191,7 @@
             this.btnRussian.Location = new System.Drawing.Point(286, 211);
             this.btnRussian.Name = "btnRussian";
             this.btnRussian.Size = new System.Drawing.Size(75, 23);
-            this.btnRussian.TabIndex = 13;
+            this.btnRussian.TabIndex = 14;
             this.btnRussian.Text = "Русский";
             this.btnRussian.UseVisualStyleBackColor = true;
             this.btnRussian.Click += new System.EventHandler(this.btnRussian_Click);
@@ -197,55 +201,10 @@
             this.btnHelp.Location = new System.Drawing.Point(286, 7);
             this.btnHelp.Name = "btnHelp";
             this.btnHelp.Size = new System.Drawing.Size(75, 23);
-            this.btnHelp.TabIndex = 14;
+            this.btnHelp.TabIndex = 15;
             this.btnHelp.Text = "Help";
             this.btnHelp.UseVisualStyleBackColor = true;
             this.btnHelp.Click += new System.EventHandler(this.btnHelp_Click);
-            // 
-            // rbNotificationsOff
-            // 
-            this.rbNotificationsOff.AutoSize = true;
-            this.rbNotificationsOff.Location = new System.Drawing.Point(3, 184);
-            this.rbNotificationsOff.Name = "rbNotificationsOff";
-            this.rbNotificationsOff.Size = new System.Drawing.Size(103, 17);
-            this.rbNotificationsOff.TabIndex = 15;
-            this.rbNotificationsOff.TabStop = true;
-            this.rbNotificationsOff.Text = "Notifications: Off";
-            this.rbNotificationsOff.UseVisualStyleBackColor = true;
-            this.rbNotificationsOff.CheckedChanged += new System.EventHandler(this.rbNotificationsOff_CheckedChanged);
-            // 
-            // rbNotificationsNoSound
-            // 
-            this.rbNotificationsNoSound.AutoSize = true;
-            this.rbNotificationsNoSound.Location = new System.Drawing.Point(174, 184);
-            this.rbNotificationsNoSound.Name = "rbNotificationsNoSound";
-            this.rbNotificationsNoSound.Size = new System.Drawing.Size(160, 17);
-            this.rbNotificationsNoSound.TabIndex = 16;
-            this.rbNotificationsNoSound.TabStop = true;
-            this.rbNotificationsNoSound.Text = "Notifications: On (No Sound)";
-            this.rbNotificationsNoSound.UseVisualStyleBackColor = true;
-            // 
-            // rbNotificationsWithSound
-            // 
-            this.rbNotificationsWithSound.AutoSize = true;
-            this.rbNotificationsWithSound.Location = new System.Drawing.Point(174, 161);
-            this.rbNotificationsWithSound.Name = "rbNotificationsWithSound";
-            this.rbNotificationsWithSound.Size = new System.Drawing.Size(168, 17);
-            this.rbNotificationsWithSound.TabIndex = 17;
-            this.rbNotificationsWithSound.TabStop = true;
-            this.rbNotificationsWithSound.Text = "Notifications: On (With Sound)";
-            this.rbNotificationsWithSound.UseVisualStyleBackColor = true;
-            // 
-            // rbNotificationsSoundOnly
-            // 
-            this.rbNotificationsSoundOnly.AutoSize = true;
-            this.rbNotificationsSoundOnly.Location = new System.Drawing.Point(3, 161);
-            this.rbNotificationsSoundOnly.Name = "rbNotificationsSoundOnly";
-            this.rbNotificationsSoundOnly.Size = new System.Drawing.Size(144, 17);
-            this.rbNotificationsSoundOnly.TabIndex = 18;
-            this.rbNotificationsSoundOnly.TabStop = true;
-            this.rbNotificationsSoundOnly.Text = "Notifications: Sound Only";
-            this.rbNotificationsSoundOnly.UseVisualStyleBackColor = true;
             // 
             // lblAbout
             // 
@@ -253,8 +212,8 @@
             this.lblAbout.Location = new System.Drawing.Point(0, 211);
             this.lblAbout.Name = "lblAbout";
             this.lblAbout.Size = new System.Drawing.Size(182, 39);
-            this.lblAbout.TabIndex = 19;
-            this.lblAbout.Text = "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2025 v1.0";
+            this.lblAbout.TabIndex = 16;
+            this.lblAbout.Text = "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015";
             // 
             // linkLabel
             // 
@@ -262,7 +221,7 @@
             this.linkLabel.Location = new System.Drawing.Point(0, 250);
             this.linkLabel.Name = "linkLabel";
             this.linkLabel.Size = new System.Drawing.Size(125, 13);
-            this.linkLabel.TabIndex = 20;
+            this.linkLabel.TabIndex = 17;
             this.linkLabel.TabStop = true;
             this.linkLabel.Text = "https://taplink.cc/ericool";
             this.linkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel_LinkClicked);
@@ -272,15 +231,12 @@
             this.ClientSize = new System.Drawing.Size(363, 271);
             this.Controls.Add(this.linkLabel);
             this.Controls.Add(this.lblAbout);
-            this.Controls.Add(this.rbNotificationsSoundOnly);
-            this.Controls.Add(this.rbNotificationsWithSound);
-            this.Controls.Add(this.rbNotificationsNoSound);
-            this.Controls.Add(this.rbNotificationsOff);
             this.Controls.Add(this.btnHelp);
             this.Controls.Add(this.btnRussian);
             this.Controls.Add(this.btnEnglish);
             this.Controls.Add(this.btnTest);
-            this.Controls.Add(this.chkFilterOfflineStreamers);
+            this.Controls.Add(this.chkPlaySoundNotifications);
+            this.Controls.Add(this.chkShowPopupNotifications);
             this.Controls.Add(this.chkSaveLogToFile);
             this.Controls.Add(this.chkFilterUnchangedCategories);
             this.Controls.Add(this.lblInterval);

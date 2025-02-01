@@ -12,28 +12,25 @@ namespace TwitchCategoryTracker
         public int CheckInterval { get; private set; }
         public bool FilterUnchangedCategories { get; private set; }
         public bool SaveLogToFile { get; private set; }
-        public bool FilterOfflineStreamers { get; private set; }
         public string CurrentLanguage { get; private set; }
-        public int NotificationMode { get; private set; }
+        public bool ShowPopupNotifications { get; private set; }
+        public bool PlaySoundNotifications { get; private set; }
 
-        public SettingsForm(string currentClientId, string currentClientSecret, int currentInterval, bool currentFilterUnchangedCategories, bool currentSaveLogToFile, bool currentFilterOfflineStreamers, string currentLanguage, int currentNotificationMode)
+        public SettingsForm(string currentClientId, string currentClientSecret, int currentInterval, bool currentFilterUnchangedCategories, bool currentSaveLogToFile, string currentLanguage, bool currentShowPopupNotifications, bool currentPlaySoundNotifications)
         {
             InitializeComponent();
-
-            // Жестко задаем текст кнопок выбора языка
-            btnEnglish.Text = "English";
-            btnRussian.Text = "Русский";
 
             txtClientId.Text = currentClientId;
             txtClientSecret.Text = currentClientSecret;
             txtInterval.Text = currentInterval.ToString();
             chkFilterUnchangedCategories.Checked = currentFilterUnchangedCategories;
             chkSaveLogToFile.Checked = currentSaveLogToFile;
-            chkFilterOfflineStreamers.Checked = currentFilterOfflineStreamers;
             CurrentLanguage = currentLanguage;
-            NotificationMode = currentNotificationMode;
+            ShowPopupNotifications = currentShowPopupNotifications;
+            PlaySoundNotifications = currentPlaySoundNotifications;
+            chkShowPopupNotifications.Checked = ShowPopupNotifications;
+            chkPlaySoundNotifications.Checked = PlaySoundNotifications;
             UpdateLanguage();
-            UpdateNotificationMode();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -52,24 +49,8 @@ namespace TwitchCategoryTracker
             CheckInterval = interval;
             FilterUnchangedCategories = chkFilterUnchangedCategories.Checked;
             SaveLogToFile = chkSaveLogToFile.Checked;
-            FilterOfflineStreamers = chkFilterOfflineStreamers.Checked;
-
-            if (rbNotificationsOff.Checked)
-            {
-                NotificationMode = 0;
-            }
-            else if (rbNotificationsNoSound.Checked)
-            {
-                NotificationMode = 1;
-            }
-            else if (rbNotificationsWithSound.Checked)
-            {
-                NotificationMode = 2;
-            }
-            else if (rbNotificationsSoundOnly.Checked)
-            {
-                NotificationMode = 3;
-            }
+            ShowPopupNotifications = chkShowPopupNotifications.Checked;
+            PlaySoundNotifications = chkPlaySoundNotifications.Checked;
 
             DialogResult = DialogResult.OK;
             Close();
@@ -147,60 +128,32 @@ namespace TwitchCategoryTracker
             chkSaveLogToFile.Text = CurrentLanguage == "EN"
                 ? "Save log to file"
                 : "Сохранять журнал";
-            chkFilterOfflineStreamers.Text = CurrentLanguage == "EN"
-                ? "Do not add offline streamers to the log"
-                : "Не добавлять оффлайн стримеров в журнал";
+            chkShowPopupNotifications.Text = CurrentLanguage == "EN"
+                ? "Show Popup Notifications"
+                : "Показывать всплывающие уведомления";
+            chkPlaySoundNotifications.Text = CurrentLanguage == "EN"
+                ? "Play Sound Notifications"
+                : "Проигрывать звуковые уведомления";
             btnSave.Text = CurrentLanguage == "EN" ? "Save" : "Сохранить";
             btnCancel.Text = CurrentLanguage == "EN" ? "Cancel" : "Отмена";
             btnTest.Text = CurrentLanguage == "EN" ? "Test" : "Тест";
             btnHelp.Text = CurrentLanguage == "EN" ? "Help" : "Помощь";
-            rbNotificationsOff.Text = CurrentLanguage == "EN" ? "Notifications: Off" : "Уведомления: Выкл.";
-            rbNotificationsNoSound.Text = CurrentLanguage == "EN" ? "Notifications: On (No Sound)" : "Уведомления: Вкл. (Без звука)";
-            rbNotificationsWithSound.Text = CurrentLanguage == "EN" ? "Notifications: On (With Sound)" : "Уведомления: Вкл. (Со звуком)";
-            rbNotificationsSoundOnly.Text = CurrentLanguage == "EN" ? "Notifications: Sound Only" : "Уведомления: Только звук";
             lblAbout.Text = CurrentLanguage == "EN"
-                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2025 v1.0"
-                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2025 v1.0";
-        }
-
-        private void UpdateNotificationMode()
-        {
-            switch (NotificationMode)
-            {
-                case 0:
-                    rbNotificationsOff.Checked = true;
-                    break;
-                case 1:
-                    rbNotificationsNoSound.Checked = true;
-                    break;
-                case 2:
-                    rbNotificationsWithSound.Checked = true;
-                    break;
-                case 3:
-                    rbNotificationsSoundOnly.Checked = true;
-                    break;
-            }
+                ? "Twitch Category Tracker\nDeveloped by ericool and DeepSeek\n2015"
+                : "Twitch Category Tracker\nРазработано ericool и DeepSeek\n2015";
         }
 
         private void lblClientId_Click(object sender, EventArgs e)
         {
-            // Пустой обработчик, если не используется
         }
 
         private void linkLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            // Открываем ссылку в браузере
             System.Diagnostics.Process.Start("https://taplink.cc/ericool");
         }
 
         private void SettingsForm_Load(object sender, EventArgs e)
         {
-
-        }
-
-        private void rbNotificationsOff_CheckedChanged(object sender, EventArgs e)
-        {
-
         }
     }
 }
