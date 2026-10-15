@@ -40,7 +40,7 @@
      <CheckBox Name="NotificationsInput" Content="Уведомлять о смене категории" IsChecked="True"/>
      <CheckBox Name="OnlineInput" Content="Также о начале и конце эфира" IsChecked="True"/>
      <CheckBox Name="TrayInput" Content="При закрытии сворачивать в трей" IsChecked="True"/>
-     <StackPanel Orientation="Horizontal" Spacing="8"><Button Content="Сохранить" Classes="primary" Click="SaveSettings"/><Button Content="Тест уведомления" Click="TestNotification" Classes="tool"/></StackPanel>
+     <Button Content="Сохранить" Classes="primary" Click="SaveSettings" HorizontalAlignment="Left"/>
      <Button Name="OpenDataButton" Content="Папка данных" Classes="tool" HorizontalAlignment="Left" Click="OpenData"/>
     </StackPanel></ScrollViewer>
    </Border>
@@ -50,6 +50,6 @@
     <ScrollViewer Name="HistoryContent" Height="115"><StackPanel><TextBlock Name="HistoryEmpty" Text="Здесь появятся изменения категорий и события эфира." Classes="muted" FontSize="12" Margin="0,10"/><ItemsControl Name="HistoryList"><ItemsControl.ItemTemplate><DataTemplate><Grid ColumnDefinitions="64,115,*" Margin="0,5"><TextBlock Text="{Binding Time}" Classes="muted" FontSize="11"/><TextBlock Grid.Column="1" Text="{Binding Login}" Foreground="#C5B0F3" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,0,8,0"/><TextBlock Grid.Column="2" Text="{Binding Message}" TextWrapping="Wrap" FontSize="12"/></Grid></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></ScrollViewer>
    </StackPanel>
   </Border>
-  <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="0,10,0,0"><TextBlock Name="StatusText" Text="Без входа · добавь первый канал" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="1" Name="LastChecked" Text="30 сек." Classes="muted" FontSize="11" Margin="10,0,0,0"/></Grid>
+  <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="0,10,0,0"><TextBlock Name="StatusText" Text="Добавь первый канал" Classes="muted" FontSize="11" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="1" Name="LastChecked" Text="30 сек." Classes="muted" FontSize="11" Margin="10,0,0,0"/></Grid>
  </Grid>
 </Window>

@@ -110,7 +110,7 @@ public sealed partial class MainWindow : Window
         C<TextBlock>("LastChecked").Text = _engine.LastPoll is { } time ? time.ToLocalTime().ToString("HH:mm:ss") : _engine.Data.Settings.IntervalSeconds + " сек.";
         if (_engine.Busy) Status("Проверяем…");
         else if (_engine.Data.Channels.Any(c => c.Error is not null)) Status("Нет свежих данных для некоторых каналов · подробности при наведении");
-        else Status(_engine.Paused ? "Пауза" : $"Без входа · каналов: {_engine.Data.Channels.Count} · каждые {_engine.Data.Settings.IntervalSeconds} сек.");
+        else Status(_engine.Paused ? "Пауза" : $"Каналов: {_engine.Data.Channels.Count} · каждые {_engine.Data.Settings.IntervalSeconds} сек.");
     }
 
     private async void AddChannel(object? s, RoutedEventArgs e) => await AddFromInputAsync();
@@ -171,7 +171,6 @@ public sealed partial class MainWindow : Window
         C<Border>("SettingsPanel").IsVisible = false;
         Status("Настройки сохранены");
     });
-    private void TestNotification(object? s, RoutedEventArgs e) { ShowNotification("Twitch Category Tracker", "Так будут выглядеть уведомления о смене категории."); Status("Тестовое уведомление отправлено Windows"); }
     private void ShowNotification(string title, string message) => _tray?.ShowBalloonTip(5000, title, message, Forms.ToolTipIcon.Info);
     private async Task Guard(Func<Task> action) { try { await action(); } catch (Exception ex) { Status(TrackerEngine.FriendlyError(ex)); } }
     private void OpenExternal(string target) { try { if (!Program.QaMode) Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); } catch (Exception ex) { Status(ex.Message); } }

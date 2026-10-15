@@ -1,10 +1,10 @@
 # Twitch Category Tracker
 
-Компактная утилита для Windows, которая следит за категориями стримеров Twitch и уведомляет об изменениях. **Без входа в аккаунт и без личных API-ключей.**
+Компактная утилита для Windows, которая следит за категориями стримеров Twitch и уведомляет об изменениях.
 
 ## Скачать
 
-**[Скачать v2.0.0 для Windows x64](https://github.com/wericool/Twitch-Category-Tracker/releases/download/v2.0.0/TwitchCategoryTracker-v2.0.0-win-x64.zip)** · [Все версии](https://github.com/wericool/Twitch-Category-Tracker/releases)
+**[Скачать v2.0.1 для Windows x64](https://github.com/wericool/Twitch-Category-Tracker/releases/download/v2.0.1/TwitchCategoryTracker-v2.0.1-win-x64.zip)** · [Все версии](https://github.com/wericool/Twitch-Category-Tracker/releases)
 
 Распакуйте архив и запустите `TwitchCategoryTracker.exe`. Устанавливать .NET отдельно не нужно.
 
@@ -37,7 +37,7 @@
 
 ## О работе с Twitch
 
-Для доступа без аккаунта используется внутренний API сайта Twitch. Если Twitch изменит его, может потребоваться обновление утилиты. Изменения, которые произошли между двумя проверками, могут быть пропущены. При сбое сети последние полученные данные сохраняются и помечаются как устаревшие.
+Используется внутренний API сайта Twitch. Если Twitch изменит его, может потребоваться обновление утилиты. Изменения, которые произошли между двумя проверками, могут быть пропущены. При сбое сети последние полученные данные сохраняются и помечаются как устаревшие.
 
 ## Для разработчиков
 
@@ -51,4 +51,4 @@
 
 Готовый EXE появится в `dist/TwitchCategoryTracker/`. Проверки, структура проекта и команды диагностики описаны в [документации разработчика](docs/DEVELOPMENT.md).
 
-[Что нового в v2.0.0](CHANGELOG.md)
+[История версий](CHANGELOG.md)

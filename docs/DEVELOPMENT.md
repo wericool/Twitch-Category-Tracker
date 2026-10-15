@@ -1,18 +1,18 @@
 # Twitch Category Tracker 2
 
-Compact Windows utility built with C# / .NET 10 and Avalonia 12. Add a Twitch channel name or URL and track category changes, stream starts, and stream endings. A 760×520 window contains the channel list, a collapsible event log, and a small settings panel. Russian interface, tray menu, Windows notifications, local history, and JSON export. No Twitch account or sign-in flow. Each channel has its own notification checkbox in the **Увед.** column; muted channels are still tracked and recorded in history. The global notification setting overrides all channel switches.
+Compact Windows utility built with C# / .NET 10 and Avalonia 12. Add a Twitch channel name or URL and track category changes, stream starts, and stream endings. A 760×520 window contains the channel list, a collapsible event log, and a small settings panel. Russian interface, tray menu, Windows notifications, local history, and JSON export. Each channel has its own notification checkbox in the **Увед.** column; muted channels are still tracked and recorded in history. The global notification setting overrides all channel switches.
 
 ## Run
 
 Open `dist/TwitchCategoryTracker/TwitchCategoryTracker.exe` after building, or use `Launch.cmd`. The published Windows x64 build includes .NET; users do not need a separate runtime or developer tools. Minimizing hides the window to the tray; double-clicking its icon restores it. Closing the window keeps monitoring in the tray by default; use the tray menu's **Выход** to quit.
 
-No Twitch account, personal API keys, password, or cookies are needed. The provider reads public channel data through Twitch's internal website GraphQL endpoint. It is unofficial and may break when Twitch changes its website. Network errors preserve the last good observation; stale observations are visibly marked and do not generate category-change events.
+The provider reads public channel data through Twitch's internal website GraphQL endpoint. It is unofficial and may break when Twitch changes its website. Network errors preserve the last good observation; stale observations are visibly marked and do not generate category-change events.
 
 The app polls every 30 seconds by default (configurable up to 3600 seconds). A single cycle never overlaps another. In guest mode channels are checked sequentially, so large lists or slow networks add to the time between observations. Polling can miss changes that occur between checks. History starts when a channel is added; the app does not retrieve earlier Twitch history.
 
 ## Data
 
-Settings, the channel list, notification switches, logs, exports and the latest 1000 events are stored in **`data/` beside the EXE**. Copy the application together with this folder to preserve its state. The previous JSON save is retained as `tracker.json.bak`. Malformed JSON is copied to a timestamped `.damaged-*` file before recovery. History exports contain channel names and events. No account sessions or tokens are obtained or stored. The **Папка данных** button opens this directory explicitly through Windows Explorer.
+Settings, the channel list, notification switches, logs, exports and the latest 1000 events are stored in **`data/` beside the EXE**. Copy the application together with this folder to preserve its state. The previous JSON save is retained as `tracker.json.bak`. Malformed JSON is copied to a timestamped `.damaged-*` file before recovery. History exports contain channel names and events. The **Папка данных** button opens this directory explicitly through Windows Explorer.
 
 On the first portable launch, existing data from `%LOCALAPPDATA%/TwitchCategoryTracker/v2/` is copied into `data/` if no portable state exists. The old files are preserved. Subsequent launches use the portable directory and never overwrite it from AppData. The EXE directory must be writable.
 
