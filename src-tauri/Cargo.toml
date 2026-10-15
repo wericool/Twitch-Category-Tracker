@@ -1,0 +1,27 @@
+[package]
+name = "twitch-category-tracker"
+version = "3.0.0"
+edition = "2021"
+
+[dependencies]
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "native-tls"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+tauri = { version = "2.12.4", features = ["tray-icon"] }
+tauri-plugin-single-instance = "2.5.4"
+tokio = { version = "1.53.3", features = ["rt-multi-thread", "time", "macros", "sync"] }
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+
+[build-dependencies]
+tauri-build = "2.7.3"
+
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twitch Category Tracker</title>
+<style>
+:root{--bg:#0f1117;--surface:#171a24;--card:#1c202d;--line:#2a2f42;--text:#eef1f8;--muted:#8d97b3;--accent:#9147ff;--accent-l:#bf94ff;--good:#3ddc97;--warn:#fbbf24;--bad:#f87171;--field:#0d0f16}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.4 "Segoe UI",system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;user-select:none;-webkit-user-select:none}
+input,button{font:inherit;color:inherit}
+input[type=text]{user-select:text;-webkit-user-select:text}
+::-webkit-scrollbar{width:10px}::-webkit-scrollbar-thumb{background:#3a4160;border-radius:6px;border:2px solid transparent;background-clip:content-box}
+.muted{color:var(--muted)}
+button{background:#252a3d;border:1.5px solid transparent;border-radius:10px;padding:0 14px;height:36px;cursor:pointer;white-space:nowrap;transition:border-color .12s,background .12s}
+button:hover{border-color:var(--accent-l)}button:active{opacity:.8}button:disabled{opacity:.45;pointer-events:none}
+button.primary{background:var(--accent);font-weight:600}
+button.icon{width:34px;height:34px;padding:0;background:transparent;color:var(--muted);font-size:16px;display:grid;place-items:center;border-radius:9px}
+button.icon:hover{background:#252a3d;color:var(--text);border-color:transparent}
+button.ghost{background:transparent;color:var(--muted)}
+/* header */
+header{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
+.logo{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;font-size:15px;flex:none}
+.title{font-weight:700;font-size:16px;line-height:1.1}
+.status{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status.busy{color:var(--accent-l)}.status.paused{color:var(--warn)}
+.head-text{flex:1;min-width:0}
+.pop{position:relative}
+.menu{position:absolute;right:0;top:calc(100% + 6px);width:280px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 12px 32px #000a;z-index:30;display:none}
+.menu.open{display:block}
+.menu h4{margin:0 0 8px;font-size:12px;font-weight:600;color:var(--muted)}
+.seg{display:flex;background:var(--field);border-radius:10px;padding:3px;gap:2px;margin-bottom:14px}
+.seg button{flex:1;height:30px;padding:0 4px;font-size:12px;background:transparent;color:var(--muted);border-radius:8px}
+.seg button.on{background:#2c3250;color:var(--text)}
+.opt{display:flex;align-items:center;justify-content:space-between;padding:7px 0;cursor:pointer}
+.sw{position:relative;width:38px;height:22px;flex:none}
+.sw input{position:absolute;opacity:0;inset:0;cursor:pointer;margin:0}
+.sw i{position:absolute;inset:0;border-radius:11px;background:#2e3450;transition:background .15s;pointer-events:none}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked+i{background:var(--accent)}.sw input:checked+i::after{transform:translateX(16px)}
+.menu .row{display:flex;gap:8px;margin-top:12px}.menu .row button{flex:1;padding:0 8px;font-size:13px}
+/* add */
+.add{display:flex;gap:8px;padding:4px 16px 0}
+.add input{flex:1;min-width:0;height:40px;background:var(--field);border:1.5px solid var(--line);border-radius:11px;padding:0 14px;outline:none}
+.add input:focus{border-color:var(--accent)}
+.add button{height:40px}
+.err{margin:8px 18px 0;font-size:12px;color:var(--bad);display:none}
+/* list */
+.list{flex:1;overflow-y:auto;padding:12px 16px 8px;display:flex;flex-direction:column;gap:8px}
+.row-c{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid transparent;border-radius:14px;padding:10px 10px 10px 12px;min-height:62px}
+.row-c:hover{border-color:#303650}
+.av{position:relative;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:16px;flex:none}
+.av.live{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--good)}
+.av b{position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;background:var(--good);border:2px solid var(--card);display:none}
+.av.live b{display:block}
+.info{flex:1;min-width:0}
+.nm{display:flex;align-items:center;gap:8px}
+.nm span{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:11px;color:var(--muted);background:#252a3d;border-radius:20px;padding:1px 8px;white-space:nowrap;flex:none}
+.cat{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.cat.live{color:var(--accent-l)}
+.cat.warn{color:var(--warn);font-size:12px}
+.acts{display:flex;align-items:center;gap:0;flex:none}
+.acts .icon.bell.on{color:var(--accent-l)}
+.acts .icon.rm{opacity:0}.row-c:hover .icon.rm,.icon.rm.armed{opacity:1}
+.icon.rm.armed{color:var(--bad);width:auto;padding:0 10px;font-size:12px}
+.empty{margin:auto;text-align:center;color:var(--muted);padding:0 24px}
+.empty .big{font-size:40px;margin-bottom:8px}.empty b{display:block;color:var(--text);font-size:16px;margin-bottom:6px}
+/* journal */
+.journal{background:var(--surface);border-top:1px solid var(--line)}
+.jbar{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;min-height:46px}
+.jbar .lbl{font-weight:600;font-size:13px}
+.jbar .last{flex:1;min-width:0;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jbar .chev{color:var(--muted);transition:transform .15s}.journal.open .chev{transform:rotate(180deg)}
+.jbody{display:none;padding:0 16px 12px}.journal.open .jbody{display:block}
+.jlist{max-height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.ev{display:flex;gap:8px;align-items:baseline;font-size:12.5px;padding:4px 0}
+.ev time{color:#5d6686;font-variant-numeric:tabular-nums;flex:none;width:38px}
+.ev .k{width:8px;height:8px;border-radius:50%;flex:none;align-self:center;background:#5d6686}
+.ev .k.online{background:var(--good)}.ev .k.offline{background:#5d6686}.ev .k.category{background:var(--accent-l)}.ev .k.initial{background:#4b5271}
+.ev .who{font-weight:600;flex:none}
+.ev .msg{color:#c7cee4;overflow-wrap:anywhere}
+.jtools{display:flex;gap:6px;justify-content:flex-end;margin-top:8px}.jtools button{height:28px;font-size:12px}
+#toast{position:fixed;left:50%;bottom:64px;transform:translateX(-50%);background:#2c3250;border:1px solid var(--accent);border-radius:10px;padding:8px 14px;font-size:13px;display:none;z-index:40}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">◉</div>
+  <div class="head-text"><div class="title">Category Tracker</div><div class="status" id="status">Загрузка…</div></div>
+  <button class="icon" id="refreshBtn" title="Проверить сейчас">⟳</button>
+  <button class="icon" id="pauseBtn" title="Пауза">⏸</button>
+  <div class="pop">
+    <button class="icon" id="settingsBtn" title="Настройки">⚙</button>
+    <div class="menu" id="menu">
+      <h4>ПРОВЕРЯТЬ КАЖДЫЕ</h4>
+      <div class="seg" id="intervals"></div>
+      <label class="opt"><span>Уведомления</span><span class="sw"><input type="checkbox" id="optNotify"><i></i></span></label>
+      <label class="opt"><span>О начале и конце эфира</span><span class="sw"><input type="checkbox" id="optOnline"><i></i></span></label>
+      <label class="opt"><span>Закрытие окна — в трей</span><span class="sw"><input type="checkbox" id="optTray"><i></i></span></label>
+      <div class="row"><button id="testBtn">Тест уведомления</button><button id="folderBtn">Папка данных</button></div>
+    </div>
+  </div>
+</header>
+
+<div class="add">
+  <input type="text" id="input" placeholder="Ник стримера или ссылка twitch.tv/…" spellcheck="false" autocomplete="off">
+  <button class="primary" id="addBtn">Добавить</button>
+</div>
+<div class="err" id="err"></div>
+
+<div class="list" id="list"></div>
+
+<div class="journal" id="journal">
+  <div class="jbar" id="jbar"><span class="lbl" id="jlabel">Журнал</span><span class="last" id="jlast"></span><span class="chev">⌃</span></div>
+  <div class="jbody"><div class="jlist" id="jlist"></div>
+    <div class="jtools"><button class="ghost" id="exportBtn">Экспорт</button><button class="ghost" id="clearBtn">Очистить</button></div></div>
+</div>
+<div id="toast"></div>
+
+<script>
+const { invoke } = window.__TAURI__.core, { listen } = window.__TAURI__.event;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const PRESETS = [[30, '30 с'], [60, '1 мин'], [120, '2 мин'], [300, '5 мин']];
+let S = null, errTimer = null, armed = null, armTimer = null;
+
+const hue = s => { let h = 7; for (const ch of s.toLowerCase()) h = (Math.imul(h, 31) + ch.codePointAt(0)) | 0; return Math.abs(h % 360); };
+function ago(iso) {
+  const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
+  if (s < 45) return 'только что';
+  if (s < 3600) return Math.round(s / 60) + ' мин назад';
+  if (s < 86400) return Math.round(s / 3600) + ' ч назад';
+  return Math.round(s / 86400) + ' дн назад';
+}
+const hm = iso => new Date(iso).toTimeString().slice(0, 5);
+const viewers = n => n >= 1e6 ? (n / 1e6).toFixed(1) + ' млн' : n >= 1e4 ? Math.round(n / 1e3) + ' тыс.' : n >= 1e3 ? (n / 1e3).toFixed(1).replace('.0', '') + ' тыс.' : String(n);
+
+function showError(msg) {
+  $('err').textContent = msg; $('err').style.display = 'block';
+  clearTimeout(errTimer); errTimer = setTimeout(() => $('err').style.display = 'none', 6000);
+}
+function toast(msg) { $('toast').textContent = msg; $('toast').style.display = 'block'; setTimeout(() => $('toast').style.display = 'none', 2200); }
+const run = async (cmd, args) => { try { await invoke(cmd, args); return true; } catch (e) { showError(String(e)); return false; } };
+
+// ───────── Отрисовка ─────────
+function render() {
+  if (!S) return;
+  const chs = [...S.channels].sort((a, b) => (b.Snapshot?.Live ? 1 : 0) - (a.Snapshot?.Live ? 1 : 0) || a.Login.localeCompare(b.Login));
+  $('list').innerHTML = chs.length ? chs.map(c => {
+    const sn = c.Snapshot, name = sn?.DisplayName || c.Login, live = !!sn?.Live, h = hue(c.Login);
+    const cat = live ? esc(sn.Category || 'Без категории') : 'Не в эфире';
+    const stale = c.Error ? `<div class="cat warn">⚠ ${esc(c.Error)}</div>` : '';
+    return `<div class="row-c" data-l="${esc(c.Login)}">
+      <div class="av ${live ? 'live' : ''}" style="background:hsl(${h} 50% 50% / .18);color:hsl(${h} 75% 75%)">${esc(name[0].toUpperCase())}<b></b></div>
+      <div class="info"><div class="nm"><span>${esc(name)}</span>${live ? `<span class="pill">👁 ${viewers(sn.Viewers)}</span>` : ''}</div>
+        <div class="cat ${live ? 'live' : ''}" title="${esc(live ? sn.Title : '')}">${cat}</div>${stale}</div>
+      <div class="acts">
+        <button class="icon bell ${c.Notifications ? 'on' : ''}" data-act="bell" title="${c.Notifications ? 'Уведомления включены' : 'Уведомления выключены'}">${c.Notifications ? '🔔' : '🔕'}</button>
+        <button class="icon" data-act="open" title="Открыть канал">↗</button>
+        <button class="icon rm ${armed === c.Login ? 'armed' : ''}" data-act="rm" title="Убрать из списка">${armed === c.Login ? 'Убрать?' : '✕'}</button>
+      </div></div>`;
+  }).join('') : `<div class="empty"><div class="big">📡</div><b>Пока никого нет</b>Введите ник стримера или вставьте ссылку на канал — утилита сообщит, когда он сменит категорию.</div>`;
+
+  const hist = S.history;
+  $('jlabel').textContent = 'Журнал' + (hist.length ? ' · ' + hist.length : '');
+  const last = hist[hist.length - 1];
+  $('jlast').textContent = last ? `${last.Login} · ${last.Message} · ${ago(last.At)}` : 'Событий пока нет';
+  $('jlist').innerHTML = hist.length ? [...hist].reverse().slice(0, 200).map(e =>
+    `<div class="ev"><time>${hm(e.At)}</time><i class="k ${esc(e.Kind)}"></i><span class="who" style="color:hsl(${hue(e.Login)} 75% 75%)">${esc(e.Login)}</span><span class="msg">${esc(e.Message)}</span></div>`).join('')
+    : '<div class="muted" style="font-size:12px;padding:6px 0">Здесь появятся смены категорий и начало/конец эфиров.</div>';
+  $('exportBtn').disabled = $('clearBtn').disabled = !hist.length;
+
+  const st = S.settings;
+  $('optNotify').checked = st.Notifications; $('optOnline').checked = st.NotifyOnline; $('optTray').checked = st.CloseToTray;
+  $('intervals').innerHTML = PRESETS.map(([v, t]) => `<button data-v="${v}" class="${st.IntervalSeconds === v ? 'on' : ''}">${t}</button>`).join('')
+    + (PRESETS.some(([v]) => v === st.IntervalSeconds) ? '' : `<button class="on">${st.IntervalSeconds} с</button>`);
+  $('pauseBtn').textContent = S.paused ? '▶' : '⏸'; $('pauseBtn').title = S.paused ? 'Продолжить' : 'Пауза';
+  $('refreshBtn').disabled = S.busy;
+  tick();
+}
+function tick() {
+  if (!S) return;
+  const el = $('status'); el.className = 'status';
+  if (S.paused) { el.textContent = 'Пауза — проверки остановлены'; el.classList.add('paused'); }
+  else if (S.busy) { el.textContent = 'Проверяю…'; el.classList.add('busy'); }
+  else if (!S.channels.length) el.textContent = 'Добавьте первого стримера';
+  else if (S.lastPoll) {
+    const next = Math.max(0, Math.round((Date.parse(S.lastPoll) + S.settings.IntervalSeconds * 1000 - Date.now()) / 1000));
+    el.textContent = `Обновлено ${ago(S.lastPoll)} · следующая через ${next} с`;
+  } else el.textContent = 'Проверяю…';
+}
+setInterval(tick, 1000);
+
+// ───────── Действия ─────────
+async function addChannel() {
+  const v = $('input').value.trim(); if (!v) return;
+  $('addBtn').disabled = true; $('addBtn').textContent = 'Ищу…'; $('err').style.display = 'none';
+  if (await run('add_channel', { input: v })) $('input').value = '';
+  $('addBtn').disabled = false; $('addBtn').textContent = 'Добавить'; $('input').focus();
+}
+$('addBtn').onclick = addChannel;
+$('input').onkeydown = e => { if (e.key === 'Enter') addChannel(); };
+$('list').onclick = e => {
+  const btn = e.target.closest('[data-act]'), row = e.target.closest('.row-c'); if (!btn || !row) return;
+  const login = row.dataset.l, c = S.channels.find(x => x.Login === login);
+  if (btn.dataset.act === 'bell') run('set_channel_notifications', { login, enabled: !c.Notifications });
+  else if (btn.dataset.act === 'open') run('open_channel', { login });
+  else if (btn.dataset.act === 'rm') {
+    if (armed === login) { armed = null; run('remove_channel', { login }); }
+    else { armed = login; clearTimeout(armTimer); armTimer = setTimeout(() => { armed = null; render(); }, 3000); render(); }
+  }
+};
+$('refreshBtn').onclick = () => invoke('refresh');
+$('pauseBtn').onclick = () => invoke('toggle_pause');
+$('jbar').onclick = () => $('journal').classList.toggle('open');
+$('clearBtn').onclick = () => run('clear_history');
+$('exportBtn').onclick = () => run('export_history');
+
+const saveSettings = patch => run('save_settings', { settings: { ...S.settings, ...patch } });
+$('intervals').onclick = e => { const v = +e.target.dataset.v; if (v) saveSettings({ IntervalSeconds: v }); };
+$('optNotify').onchange = e => saveSettings({ Notifications: e.target.checked });
+$('optOnline').onchange = e => saveSettings({ NotifyOnline: e.target.checked });
+$('optTray').onchange = e => saveSettings({ CloseToTray: e.target.checked });
+$('testBtn').onclick = async () => { if (await run('test_notification')) toast('Уведомление отправлено'); };
+$('folderBtn').onclick = () => run('open_data_folder');
+$('settingsBtn').onclick = e => { e.stopPropagation(); $('menu').classList.toggle('open'); };
+document.addEventListener('click', e => { if (!e.target.closest('.menu')) $('menu').classList.remove('open'); });
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+listen('state', e => { S = e.payload; render(); });
+invoke('get_state').then(s => { S = s; render(); if (s.recovery) showError(s.recovery); $('input').focus(); });
+</script>
+</body>
+</html>
