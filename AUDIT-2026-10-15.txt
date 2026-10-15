@@ -1,0 +1,68 @@
+Twitch Category Tracker — audit and rewrite, 15 October 2026
+
+Legacy repository: https://github.com/wericool/Twitch-Category-Tracker
+Legacy stack: C# WinForms, .NET Framework 4.8.1.
+
+Original method status
+- The app obtains an app access token using POST id.twitch.tv/oauth2/token
+  with client_id/client_secret/grant_type=client_credentials, then calls
+  GET api.twitch.tv/helix/streams?user_login=... and reads game_name.
+- Both endpoints and the app-token flow are still documented by Twitch.
+- A live unauthenticated Helix request returned HTTP 401, OAuth token is missing.
+- An authenticated legacy request was NOT tested: no registered app credentials
+  were provided. The old binary was not built or executed.
+
+Legacy defects found in WindowsFormsApp10/Form1.cs
+- expires_in is ignored; token expiration/401 does not trigger renewal.
+- The async timer has no overlap guard; slow rounds may run concurrently.
+- The mutable trackedStreamers list is enumerated across awaits.
+- Network/API errors return null, which is compared with the previous category,
+  potentially producing a false category-change event.
+- Client Secret is saved unencrypted to relative-path settings.txt.
+- Missing Notif.wav returns before showing any toast notification.
+- Starting tracking does not itself obtain an access token; fresh setup can
+  start a timer with no usable token until another path obtains one.
+
+Live guest feasibility check
+- Read the public website client identifier from anonymous Twitch page HTML.
+- POST the public channel query to gql.twitch.tv/gql without Authorization,
+  cookies, personal keys, or a browser session.
+- Successfully differentiated a live channel, offline channel, and nonexistent
+  channel. Live channel category, title and viewer count were retrieved.
+- This is Twitch's internal website API, not an official stable developer API.
+  A successful present-day probe is not a guarantee of future availability.
+
+New implementation
+- modern/Tracker.Core: public anonymous provider, polling, local storage,
+  category change detection and network error handling. No account login.
+- modern/Tracker.Desktop: compact 760x520 Avalonia UI, channel rows, history, settings,
+  tray menu, Windows balloon notifications, standalone self-contained publishing.
+- modern/Tracker.Tests: executable checks using simulated HTTP responses.
+- The original source tree is preserved alongside the new implementation.
+
+Acceptance boundaries
+- Guest retrieval was tested against live Twitch.
+- All login and account-session code was removed from the new utility.
+- 44 executable checks cover category transitions, persistence, recovery,
+  duplicate suppression, anonymous requests and non-overlapping polls.
+- Per-channel notification switches persist, remain independent, respect the
+  global override and do not stop history recording. Older saved channels
+  default to notifications enabled.
+- Portable data lives in data/ beside the EXE. First-run migration preserves
+  the original AppData state, backups and exports. Existing portable files
+  are never overwritten from AppData. The folder button uses Explorer with
+  a separate directory argument. Headless mouse-click tests exercise both
+  the channel checkbox and folder button.
+- Three live samples of ethenpov returned HITMAN World of Assassination,
+  category ID 1780647523; snapshots survived reload and no duplicates appeared.
+  A real category transition was not observed in that one-minute interval.
+- Compact and minimum-size headless rendering passed. Ordinary native startup
+  produced a responsive Windows window with the expected title and a tray icon.
+- Actual Windows notification display, interactive tray actions and prolonged
+  unattended tracking still need user-visible acceptance.
+
+Sources
+https://dev.twitch.tv/docs/api/reference/#get-streams
+https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/
+https://dev.twitch.tv/docs/authentication/validate-tokens/
+https://docs.avaloniaui.net/controls/navigation/trayicon

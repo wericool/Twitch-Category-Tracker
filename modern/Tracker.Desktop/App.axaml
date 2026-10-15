@@ -1,0 +1,11 @@
+<Application xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="Tracker.Desktop.App" RequestedThemeVariant="Dark">
+ <Application.Styles>
+  <FluentTheme />
+  <Style Selector="Window"><Setter Property="FontFamily" Value="Segoe UI"/><Setter Property="FontSize" Value="13"/><Setter Property="Background" Value="#12141B"/><Setter Property="Foreground" Value="#EBEDF5"/></Style>
+  <Style Selector="Button"><Setter Property="CornerRadius" Value="6"/><Setter Property="Padding" Value="11,6"/><Setter Property="MinHeight" Value="32"/><Setter Property="Cursor" Value="Hand"/></Style>
+  <Style Selector="Button.primary"><Setter Property="Background" Value="#A98AF2"/><Setter Property="Foreground" Value="#181121"/><Setter Property="FontWeight" Value="SemiBold"/></Style>
+  <Style Selector="Button.tool"><Setter Property="Background" Value="Transparent"/><Setter Property="Foreground" Value="#AAB0C2"/><Setter Property="Padding" Value="9,5"/></Style>
+  <Style Selector="TextBox"><Setter Property="CornerRadius" Value="6"/><Setter Property="Padding" Value="10,7"/><Setter Property="Background" Value="#1B1E28"/><Setter Property="BorderBrush" Value="#353A4A"/></Style>
+  <Style Selector="TextBlock.muted"><Setter Property="Foreground" Value="#8E97AB"/></Style>
+ </Application.Styles>
+</Application>
