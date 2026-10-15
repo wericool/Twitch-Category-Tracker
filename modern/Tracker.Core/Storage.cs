@@ -16,7 +16,7 @@ public sealed class Storage
         if (!File.Exists(path)) return new();
         try
         {
-            var data = JsonSerializer.Deserialize<TrackerData>(File.ReadAllText(path), Json)
+            var data = JsonSerializer.Deserialize(File.ReadAllText(path), TrackerJsonContext.Default.TrackerData)
                 ?? throw new JsonException("Empty tracker data");
             if (data.Version != 1 || data.Settings is null || data.Channels is null || data.History is null)
                 throw new JsonException("Unsupported tracker data");
@@ -39,7 +39,7 @@ public sealed class Storage
         Directory.CreateDirectory(DirectoryPath);
         var path = Path.Combine(DirectoryPath, "tracker.json");
         var temporary = path + ".tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(data, Json));
+        File.WriteAllText(temporary, JsonSerializer.Serialize(data, TrackerJsonContext.Default.TrackerData));
         if (File.Exists(path)) File.Copy(path, path + ".bak", true);
         File.Move(temporary, path, true);
     }

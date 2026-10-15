@@ -1,5 +1,7 @@
 # Twitch Category Tracker 2
 
+The main release uses Native AOT. Run `./build-aot.ps1` to publish it into `dist/aot/`; see [AOT deployment](AOT.md). The managed build remains available through `./build.ps1`.
+
 Compact Windows utility built with C# / .NET 10 and Avalonia 12. Add a Twitch channel name or URL and track category changes, stream starts, and stream endings. A 760×520 window contains the channel list, a collapsible event log, and a small settings panel. Russian interface, tray menu, Windows notifications, local history, and JSON export. Each channel has its own notification checkbox in the **Увед.** column; muted channels are still tracked and recorded in history. The global notification setting overrides all channel switches.
 
 ## Run

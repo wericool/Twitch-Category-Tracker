@@ -1,5 +1,5 @@
 using System.Net;
-using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -23,11 +23,8 @@ public sealed class TwitchClient(HttpClient http)
             }
             using var request = new HttpRequestMessage(HttpMethod.Post, "https://gql.twitch.tv/gql");
             request.Headers.Add("Client-ID", _publicClientId);
-            request.Content = JsonContent.Create(new
-            {
-                query = "query Tracker($login: String!) { user(login: $login) { login displayName stream { id title viewersCount game { id name } } } }",
-                variables = new { login }
-            });
+            var query = new TwitchQuery("query Tracker($login: String!) { user(login: $login) { login displayName stream { id title viewersCount game { id name } } } }", new TwitchVariables(login));
+            request.Content = new StringContent(JsonSerializer.Serialize(query, TrackerJsonContext.Default.TwitchQuery), Encoding.UTF8, "application/json");
             using var response = await http.SendAsync(request, ct);
             if (attempt == 0 && response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
             { _publicClientId = null; continue; }

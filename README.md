@@ -4,9 +4,11 @@
 
 ## Скачать
 
-**[Скачать v2.0.2 для Windows x64](https://github.com/wericool/Twitch-Category-Tracker/releases/download/v2.0.2/TwitchCategoryTracker-v2.0.2-win-x64.zip)** · [Все версии](https://github.com/wericool/Twitch-Category-Tracker/releases)
+**[Скачать v2.1.0 для Windows x64](https://github.com/wericool/Twitch-Category-Tracker/releases/download/v2.1.0/TwitchCategoryTracker-v2.1.0-win-x64.zip)** · [Все версии](https://github.com/wericool/Twitch-Category-Tracker/releases)
 
-Распакуйте архив и запустите `TwitchCategoryTracker.exe`. Устанавливать .NET отдельно не нужно.
+Распакуйте архив целиком и запустите `TwitchCategoryTracker.exe`. Файлы DLL должны оставаться рядом с EXE. Устанавливать .NET отдельно не нужно.
+
+Начиная с v2.1.0 используется **Native AOT**: вся программа занимает около **35 МБ**, архив — около **16 МБ**.
 
 ![Окно Twitch Category Tracker](docs/images/tracker.png)
 
@@ -17,6 +19,7 @@
 3. В колонке **«Увед.»** можно отдельно включать и выключать уведомления каждого стримера.
 
 Интервал проверки и общие настройки уведомлений находятся под кнопкой **⚙**. По умолчанию каналы проверяются каждые 30 секунд.
+Кнопка **«Тест уведомления»** в настройках отправляет пробное уведомление Windows.
 
 ## Возможности
 
@@ -43,12 +46,12 @@
 
 Новая версия написана на **C# / .NET 10 и Avalonia**. Исходники находятся в [`modern`](modern); прежняя WinForms-версия сохранена в [`WindowsFormsApp10`](WindowsFormsApp10).
 
-Для сборки нужен .NET 10 SDK:
+Для AOT-сборки нужны .NET 10 SDK и инструменты разработки C++ Visual Studio:
 
 ```powershell
-./build.ps1
+./build-aot.ps1
 ```
 
-Готовый EXE появится в `dist/TwitchCategoryTracker/`. Проверки, структура проекта и команды диагностики описаны в [документации разработчика](docs/DEVELOPMENT.md).
+Готовая программа появится в `dist/aot/`. Подробнее о [Native AOT](docs/AOT.md), проверках и [структуре проекта](docs/DEVELOPMENT.md).
 
 [История версий](CHANGELOG.md)

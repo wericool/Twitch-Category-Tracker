@@ -132,7 +132,7 @@ public sealed class TrackerEngine
         try
         {
             var path = Path.Combine(Storage.DirectoryPath, "history-" + DateTime.Now.ToString("yyyyMMdd-HHmmssfff") + ".json");
-            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(Data.History, Storage.Json));
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(Data.History, TrackerJsonContext.Default.ListHistoryEntry));
             return path;
         }
         finally { _gate.Release(); }

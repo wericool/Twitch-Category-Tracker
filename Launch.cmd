@@ -1,2 +1,2 @@
 @echo off
-start "" "%~dp0dist\TwitchCategoryTracker\TwitchCategoryTracker.exe"
+start "" "%~dp0dist\aot\TwitchCategoryTracker.exe"
