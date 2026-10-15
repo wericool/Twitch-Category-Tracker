@@ -4,7 +4,7 @@
 
 ## Скачать
 
-**[Скачать v2.0.1 для Windows x64](https://github.com/wericool/Twitch-Category-Tracker/releases/download/v2.0.1/TwitchCategoryTracker-v2.0.1-win-x64.zip)** · [Все версии](https://github.com/wericool/Twitch-Category-Tracker/releases)
+**[Скачать v2.0.2 для Windows x64](https://github.com/wericool/Twitch-Category-Tracker/releases/download/v2.0.2/TwitchCategoryTracker-v2.0.2-win-x64.zip)** · [Все версии](https://github.com/wericool/Twitch-Category-Tracker/releases)
 
 Распакуйте архив и запустите `TwitchCategoryTracker.exe`. Устанавливать .NET отдельно не нужно.
 

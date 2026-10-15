@@ -71,14 +71,14 @@ public sealed partial class MainWindow : Window
             catch (Exception ex)
             {
                 Program.Log(ex.ToString());
-                Status(TrackerEngine.FriendlyError(ex));
+                ShowError(TrackerEngine.FriendlyError(ex));
                 if (Program.QaMode) { Directory.CreateDirectory(_qaDirectory); await File.WriteAllTextAsync(Path.Combine(_qaDirectory, "failure.txt"), ex.ToString()); Environment.ExitCode = 1; Quit(); }
             }
         };
         RenderState();
         LoadSettingsFields();
         SizeChanged += (_, e) => { if (e.NewSize.Height < 450) SetHistoryVisible(false); C<Border>("SettingsPanel").MaxHeight = Math.Max(170, e.NewSize.Height - 120); };
-        if (_engine.Storage.RecoveryMessage is { } warning) Status(warning);
+        if (_engine.Storage.RecoveryMessage is { } warning) ShowError(warning);
         Program.Log("window constructed");
     }
 
@@ -97,7 +97,8 @@ public sealed partial class MainWindow : Window
     }
 
     private T C<T>(string name) where T : Control => this.FindControl<T>(name) ?? throw new InvalidOperationException(name);
-    private void Status(string message) => C<TextBlock>("StatusText").Text = message;
+    private void ShowError(string message) { C<TextBlock>("ErrorText").Text = message; C<Border>("ErrorPanel").IsVisible = true; }
+    private void ClearError() => C<Border>("ErrorPanel").IsVisible = false;
     private void RenderState()
     {
         C<TextBlock>("EmptyState").IsVisible = _engine.Data.Channels.Count == 0;
@@ -107,10 +108,6 @@ public sealed partial class MainWindow : Window
         C<TextBlock>("HistoryCount").Text = "Журнал · " + _engine.Data.History.Count;
         C<Button>("RefreshButton").IsEnabled = !_engine.Busy;
         C<Button>("PauseButton").Content = _engine.Paused ? "▶" : "Ⅱ";
-        C<TextBlock>("LastChecked").Text = _engine.LastPoll is { } time ? time.ToLocalTime().ToString("HH:mm:ss") : _engine.Data.Settings.IntervalSeconds + " сек.";
-        if (_engine.Busy) Status("Проверяем…");
-        else if (_engine.Data.Channels.Any(c => c.Error is not null)) Status("Нет свежих данных для некоторых каналов · подробности при наведении");
-        else Status(_engine.Paused ? "Пауза" : $"Каналов: {_engine.Data.Channels.Count} · каждые {_engine.Data.Settings.IntervalSeconds} сек.");
     }
 
     private async void AddChannel(object? s, RoutedEventArgs e) => await AddFromInputAsync();
@@ -119,9 +116,10 @@ public sealed partial class MainWindow : Window
     {
         if (_adding) return;
         _adding = true;
+        ClearError();
         C<Button>("AddButton").IsEnabled = false;
-        try { Status("Ищем канал…"); await _engine.AddAsync(C<TextBox>("ChannelInput").Text ?? "", _lifetime.Token); C<TextBox>("ChannelInput").Text = ""; RenderState(); }
-        catch (Exception ex) { Status(TrackerEngine.FriendlyError(ex)); }
+        try { await _engine.AddAsync(C<TextBox>("ChannelInput").Text ?? "", _lifetime.Token); C<TextBox>("ChannelInput").Text = ""; RenderState(); }
+        catch (Exception ex) { ShowError(TrackerEngine.FriendlyError(ex)); }
         finally { _adding = false; C<Button>("AddButton").IsEnabled = true; }
     }
     private async void RemoveChannel(object? s, RoutedEventArgs e) { if (s is Button { Tag: string login }) await Guard(() => _engine.RemoveAsync(login)); }
@@ -131,18 +129,18 @@ public sealed partial class MainWindow : Window
     private void ToggleHistory(object? s, RoutedEventArgs e) => SetHistoryVisible(!C<ScrollViewer>("HistoryContent").IsVisible);
     private void SetHistoryVisible(bool visible) { C<ScrollViewer>("HistoryContent").IsVisible = visible; C<Button>("HistoryToggle").Content = visible ? "⌃" : "⌄"; }
     private async void ClearHistory(object? s, RoutedEventArgs e) => await Guard(() => _engine.ClearHistoryAsync());
-    private async void ExportHistory(object? s, RoutedEventArgs e) => await Guard(async () => { var path = await _engine.ExportAsync(); OpenDataFolder(); Status("Сохранено: " + path); });
+    private async void ExportHistory(object? s, RoutedEventArgs e) => await Guard(async () => { await _engine.ExportAsync(); OpenDataFolder(); });
     private void OpenData(object? s, RoutedEventArgs e) => OpenDataFolder();
     private void OpenDataFolder()
     {
         try
         {
+            ClearError();
             var request = PortableData.OpenFolderRequest(_engine.Storage.DirectoryPath);
             if (!Program.QaMode) Process.Start(request);
             _lastOpenedFolder = _engine.Storage.DirectoryPath;
-            Status("Папка данных: " + _engine.Storage.DirectoryPath);
         }
-        catch (Exception ex) { Status("Не удалось открыть папку: " + ex.Message); }
+        catch (Exception ex) { ShowError("Не удалось открыть папку: " + ex.Message); }
     }
     private async void ToggleChannelNotifications(object? s, RoutedEventArgs e)
     {
@@ -169,11 +167,10 @@ public sealed partial class MainWindow : Window
             settings.CloseToTray = C<CheckBox>("TrayInput").IsChecked == true;
         });
         C<Border>("SettingsPanel").IsVisible = false;
-        Status("Настройки сохранены");
     });
     private void ShowNotification(string title, string message) => _tray?.ShowBalloonTip(5000, title, message, Forms.ToolTipIcon.Info);
-    private async Task Guard(Func<Task> action) { try { await action(); } catch (Exception ex) { Status(TrackerEngine.FriendlyError(ex)); } }
-    private void OpenExternal(string target) { try { if (!Program.QaMode) Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); } catch (Exception ex) { Status(ex.Message); } }
+    private async Task Guard(Func<Task> action) { ClearError(); try { await action(); } catch (Exception ex) { ShowError(TrackerEngine.FriendlyError(ex)); } }
+    private void OpenExternal(string target) { try { if (!Program.QaMode) Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); } catch (Exception ex) { ShowError(ex.Message); } }
     private void Restore() { Show(); WindowState = WindowState.Normal; Activate(); }
     private void Quit()
     {

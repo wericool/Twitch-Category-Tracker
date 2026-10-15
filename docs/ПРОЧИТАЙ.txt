@@ -1,4 +1,4 @@
-Twitch Category Tracker 2.0.1
+Twitch Category Tracker 2.0.2
 
 Запустите TwitchCategoryTracker.exe, введите ник или ссылку на канал
 и нажмите «Добавить».
